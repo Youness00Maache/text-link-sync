@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { QRCodeGenerator } from '@/components/QRCodeGenerator';
 import { SendToPhone } from '@/components/SendToPhone';
+import { ServerInstructions } from '@/components/ServerInstructions';
 import { TextLinkerLogo } from '@/components/TextLinkerLogo';
 import { FileText } from 'lucide-react';
 
@@ -89,6 +90,9 @@ const Home = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Server Setup Instructions */}
+        <ServerInstructions />
       </div>
     </div>
   );
