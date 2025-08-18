@@ -65,8 +65,7 @@ const Home = () => {
           </CardContent>
         </Card>
 
-        {/* Send to Phone - New Feature */}
-        <SendToPhone token={token} />
+        {/* Send to Phone - Only show after QR is generated and scanned */}
 
         {/* Info Cards */}
         <div className="grid grid-cols-2 gap-4 mt-8">

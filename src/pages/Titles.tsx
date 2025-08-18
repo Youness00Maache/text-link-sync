@@ -70,7 +70,7 @@ const Titles = () => {
         />
 
         <div className="space-y-6">
-          {/* Send to Phone Feature */}
+          {/* Send to Phone Feature - At the top */}
           <SendToPhone token={token} />
 
           {/* Notes List */}

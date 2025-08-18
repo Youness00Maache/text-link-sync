@@ -7,8 +7,8 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
   useEffect(() => {
     if (!token) return;
 
-    // Initialize socket connection
-    socketRef.current = io();
+    // Initialize socket connection to your server
+    socketRef.current = io('https://textlinker.pro');
 
     socketRef.current.emit('joinRoom', token);
 

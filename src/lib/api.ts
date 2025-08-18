@@ -8,9 +8,9 @@ export interface TokenResponse {
   token: string;
 }
 
-// Demo mode - works without backend server
-const DEMO_MODE = true; // Set to false when connecting to real server
-const SERVER_URL = DEMO_MODE ? '' : 'http://localhost:3002'; // Your server URL
+// Production mode - connects to your real server
+const DEMO_MODE = false; // Set to false when connecting to real server
+const SERVER_URL = 'https://textlinker.pro'; // Your production server URL
 
 // Simple token generator for demo mode
 function generateDemoToken(): string {

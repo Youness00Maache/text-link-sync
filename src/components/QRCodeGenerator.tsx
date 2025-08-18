@@ -28,8 +28,8 @@ export const QRCodeGenerator = ({ onTokenGenerated, autoGenerate = false, classN
       setToken(newToken);
       onTokenGenerated(newToken);
 
-      // In demo mode, create a QR code that points to this same app with token
-      const fullUrl = `${window.location.origin}/titles?token=${newToken}&demo=1`;
+      // Create a QR code that points to the titles page with the token
+      const fullUrl = `${window.location.origin}/titles?token=${newToken}`;
       
       if (canvasRef.current) {
         await QRCode.toCanvas(canvasRef.current, fullUrl, {
@@ -79,11 +79,6 @@ export const QRCodeGenerator = ({ onTokenGenerated, autoGenerate = false, classN
           <p className="text-sm text-muted-foreground mt-3">
             Scan this QR code with your phone to start sharing text
           </p>
-          <div className="mt-3 p-3 bg-warning/10 rounded-lg">
-            <p className="text-xs text-warning-foreground">
-              <strong>Demo Mode:</strong> To connect your real server, update the SERVER_URL in api.ts and set DEMO_MODE to false
-            </p>
-          </div>
         </div>
       )}
     </div>

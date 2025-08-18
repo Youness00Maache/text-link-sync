@@ -15,58 +15,20 @@ export const ServerInstructions = () => {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Currently running in <strong>demo mode</strong>. To enable full functionality, run your server.js file.
+            Connected to <strong>textlinker.pro</strong> server. Your app is ready to share text with your phone!
           </AlertDescription>
         </Alert>
         
-        <div className="space-y-3 text-sm">
-          <div className="flex items-start gap-3">
-            <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-              1
-            </div>
-            <div>
-              <p className="font-medium">Run your Node.js server</p>
-              <code className="text-xs bg-accent px-2 py-1 rounded mt-1 block">
-                node server.js
-              </code>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-              2
-            </div>
-            <div>
-              <p className="font-medium">Update the API configuration</p>
-              <p className="text-muted-foreground text-xs mt-1">
-                In <code>src/lib/api.ts</code>, set <code>DEMO_MODE = false</code> and update <code>SERVER_URL</code>
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
-              3
-            </div>
-            <div>
-              <p className="font-medium">Your mobile app will connect to</p>
-              <code className="text-xs bg-accent px-2 py-1 rounded mt-1 block">
-                http://localhost:3002
-              </code>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-muted/50 p-3 rounded-lg">
+        <div className="bg-success/10 p-3 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <Smartphone className="h-4 w-4" />
-            <span className="text-sm font-medium">Demo Features Available</span>
+            <span className="text-sm font-medium">Active Features</span>
           </div>
           <ul className="text-xs text-muted-foreground space-y-1">
             <li>• QR code generation ✓</li>
-            <li>• Send text to phone (simulated) ✓</li>
-            <li>• View sample notes ✓</li>
-            <li>• Full UI experience ✓</li>
+            <li>• Send text to phone ✓</li>
+            <li>• Receive text from phone ✓</li>
+            <li>• Real-time sync ✓</li>
           </ul>
         </div>
       </CardContent>
