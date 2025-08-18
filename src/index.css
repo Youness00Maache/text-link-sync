@@ -36,9 +36,9 @@
     --accent: 0 0% 95%;
     --accent-foreground: 0 0% 11%;
 
-    /* Success color for positive actions */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 98%;
+    /* Success color for positive actions - light gray */
+    --success: 0 0% 75%;
+    --success-foreground: 0 0% 11%;
 
     /* Warning color for attention */
     --warning: 48 96% 53%;

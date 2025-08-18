@@ -46,48 +46,9 @@ const Home = () => {
               onTokenGenerated={handleTokenGenerated}
               autoGenerate={searchParams.get('showQR') === '1'}
             />
-            
-            {token && (
-              <Button
-                onClick={goToTitles}
-                variant="outline"
-                size="lg"
-                className="w-full mt-4"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                View Your Texts
-              </Button>
-            )}
           </CardContent>
         </Card>
 
-        {/* Send to Phone - Only show after QR is generated and scanned */}
-
-        {/* Info Cards */}
-        <div className="grid grid-cols-2 gap-4 mt-8">
-          <Card className="card-shadow-soft">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl mb-2">📱</div>
-              <h3 className="font-medium text-sm mb-1">From Phone</h3>
-              <p className="text-xs text-muted-foreground">
-                Scan QR code to send text from your mobile app
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card className="card-shadow-soft">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl mb-2">💻</div>
-              <h3 className="font-medium text-sm mb-1">To Phone</h3>
-              <p className="text-xs text-muted-foreground">
-                Type here to send text directly to your phone
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Server Setup Instructions */}
-        <ServerInstructions />
       </div>
     </div>
   );

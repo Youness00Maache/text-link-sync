@@ -15,6 +15,10 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     if (onTextUpdate) {
       socketRef.current.on('textUpdate', ({ text }) => {
         onTextUpdate(text);
+        // Auto-navigate to titles after scanning QR and receiving text
+        if (window.location.pathname === '/' && text) {
+          window.location.href = `/titles?token=${token}`;
+        }
       });
     }
 

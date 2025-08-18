@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { AppHeader } from '@/components/AppHeader';
 import { NotesList } from '@/components/NotesList';
-import { SendToPhone } from '@/components/SendToPhone';
+import { Send } from 'lucide-react';
 import { useSocket } from '@/hooks/useSocket';
 import { api } from '@/lib/api';
 import { parseTextToNotes, Note } from '@/lib/textUtils';
@@ -70,8 +71,20 @@ const Titles = () => {
         />
 
         <div className="space-y-6">
-          {/* Send to Phone Feature - At the top */}
-          <SendToPhone token={token} />
+          {/* Send to Phone Button - At the top */}
+          <Card className="card-shadow-soft">
+            <CardContent className="p-6">
+              <Button
+                onClick={() => navigate(`/send?token=${token}`)}
+                variant="success"
+                size="lg"
+                className="w-full"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Send to Phone
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Notes List */}
           <Card className="card-shadow">
