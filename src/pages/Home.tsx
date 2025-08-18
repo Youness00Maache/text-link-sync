@@ -36,11 +36,7 @@ const Home = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <TextLinkerLogo className="mx-auto mb-4 h-16" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">Welcome to TextLinker</h1>
-          <p className="text-muted-foreground">
-            Share text seamlessly between your devices
-          </p>
+          <TextLinkerLogo className="mx-auto mb-8 h-16" />
         </div>
 
         {/* QR Code Generation */}
