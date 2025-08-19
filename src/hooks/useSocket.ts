@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 
 export const useSocket = (token: string | null, onTextUpdate?: (text: string) => void) => {
+  const navigate = useNavigate();
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -17,7 +19,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
         onTextUpdate(text);
         // Auto-navigate to titles after scanning QR and receiving text
         if (window.location.pathname === '/' && text) {
-          window.location.href = `/titles?token=${token}`;
+          navigate(`/titles?token=${token}`);
         }
       });
     }
