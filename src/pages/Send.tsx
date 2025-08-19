@@ -40,8 +40,7 @@ const Send = () => {
         });
         setTitle('');
         setContent('');
-        // Go back to titles page
-        navigate(`/titles?token=${token}`);
+        // Stay on send page instead of navigating away
       } else {
         toast({
           title: "Failed to send",
