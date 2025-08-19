@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import QRCode from 'qrcode';
 import { Button } from '@/components/ui/button';
+import { FileText } from 'lucide-react';
 import { api } from '@/lib/api';
 
 interface QRCodeGeneratorProps {
@@ -14,6 +16,7 @@ export const QRCodeGenerator = ({ onTokenGenerated, autoGenerate = false, classN
   const [token, setToken] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (autoGenerate) {
@@ -79,6 +82,21 @@ export const QRCodeGenerator = ({ onTokenGenerated, autoGenerate = false, classN
           <p className="text-sm text-muted-foreground mt-3">
             Scan this QR code with your phone to start sharing text
           </p>
+          
+          {/* View Your Texts Button */}
+          {token && (
+            <div className="mt-4">
+              <Button
+                onClick={() => navigate(`/titles?token=${token}`)}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                View Your Texts
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
