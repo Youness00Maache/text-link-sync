@@ -29,6 +29,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
 
     if (onTextUpdate) {
       socketRef.current.on('textUpdate', ({ text }) => {
+        console.log('Socket received textUpdate:', text); // Debug log
         onTextUpdate(text);
         // Auto-navigate to titles after scanning QR and receiving text
         if (window.location.pathname === '/' && text) {
@@ -36,6 +37,15 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
         }
       });
     }
+
+    // Listen for connection status
+    socketRef.current.on('connect', () => {
+      console.log('Connected to WebSocket server');
+    });
+
+    socketRef.current.on('disconnect', () => {
+      console.log('Disconnected from WebSocket server');
+    });
 
     return () => {
       if (socketRef.current) {

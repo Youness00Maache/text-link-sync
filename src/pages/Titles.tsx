@@ -18,6 +18,7 @@ const Titles = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const handleTextUpdate = (text: string) => {
+    console.log('Received text update:', text); // Debug log
     const parsedNotes = parseTextToNotes(text);
     setNotes(parsedNotes);
     setIsLoading(false);
