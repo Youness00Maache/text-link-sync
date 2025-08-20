@@ -13,6 +13,7 @@ const Send = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
+  const originalText = searchParams.get('originalText') || '';
   const { toast } = useToast();
 
   const [title, setTitle] = useState('');
@@ -31,8 +32,10 @@ const Send = () => {
 
     setIsSending(true);
     try {
-      const textToSend = `${title}\n\n${content}`;
-      const success = await api.sendToPhone(token, textToSend);
+      const newText = `${title}\n\n${content}`;
+      // Combine original text with new text
+      const combinedText = originalText ? `${originalText}\n\n\n\n${newText}` : newText;
+      const success = await api.sendToPhone(token, combinedText);
       if (success) {
         toast({
           title: "Text sent successfully!",

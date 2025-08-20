@@ -16,9 +16,11 @@ const Titles = () => {
   
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [originalText, setOriginalText] = useState<string>('');
 
   const handleTextUpdate = (text: string) => {
     console.log('Received text update:', text); // Debug log
+    setOriginalText(text); // Keep track of the original text
     const parsedNotes = parseTextToNotes(text);
     setNotes(parsedNotes);
     setIsLoading(false);
@@ -76,7 +78,7 @@ const Titles = () => {
           <Card className="card-shadow-soft">
             <CardContent className="p-6">
               <Button
-                onClick={() => navigate(`/send?token=${token}`)}
+                onClick={() => navigate(`/send?token=${token}&originalText=${encodeURIComponent(originalText)}`)}
                 variant="success"
                 size="lg"
                 className="w-full"
