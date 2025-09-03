@@ -8,7 +8,7 @@ export const TextLinkerLogo = ({ className = "" }: TextLinkerLogoProps) => {
       <img 
         src="/lovable-uploads/9423ada0-4d2b-4727-a511-f25f60008ea4.png" 
         alt="TextLinker Logo" 
-        className="h-12 w-auto transform scale-95"
+        className="h-12 w-auto transform scale-90"
       />
     </div>
   );
