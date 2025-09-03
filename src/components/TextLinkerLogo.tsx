@@ -5,14 +5,11 @@ interface TextLinkerLogoProps {
 export const TextLinkerLogo = ({ className = "" }: TextLinkerLogoProps) => {
   return (
     <div className={`flex items-center justify-center ${className}`}>
-      <div className="flex items-center gap-2 text-foreground">
-        <div className="flex flex-col gap-0.5">
-          <div className="w-4 h-0.5 bg-current"></div>
-          <div className="w-4 h-0.5 bg-current"></div>
-          <div className="w-4 h-0.5 bg-current"></div>
-        </div>
-        <span className="text-2xl font-bold tracking-tight">TextLinker</span>
-      </div>
+      <img 
+        src="/lovable-uploads/9423ada0-4d2b-4727-a511-f25f60008ea4.png" 
+        alt="TextLinker Logo" 
+        className="h-8 w-auto"
+      />
     </div>
   );
 };
