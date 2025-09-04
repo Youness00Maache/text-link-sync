@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AppHeader } from '@/components/AppHeader';
 import { NotesList } from '@/components/NotesList';
-import { Send } from 'lucide-react';
+import { Send, Wifi, WifiOff } from 'lucide-react';
 import { useSocket } from '@/hooks/useSocket';
 import { api } from '@/lib/api';
 import { parseTextToNotes, Note } from '@/lib/textUtils';
@@ -26,7 +26,7 @@ const Titles = () => {
     setIsLoading(false);
   };
 
-  useSocket(token, handleTextUpdate);
+  const { socket, isConnected } = useSocket(token, handleTextUpdate);
 
   useEffect(() => {
     if (!token) {
@@ -72,6 +72,19 @@ const Titles = () => {
           showBackButton={true}
           showQRButton={true}
         />
+
+        {/* Connection Status Indicator */}
+        <div className={`flex items-center justify-center py-2 px-4 rounded-lg mb-4 ${
+          isConnected 
+            ? 'bg-green-50 text-green-700 border border-green-200' 
+            : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          {isConnected ? (
+            <><Wifi className="h-4 w-4 mr-2" /> Connected</>
+          ) : (
+            <><WifiOff className="h-4 w-4 mr-2" /> Reconnecting...</>
+          )}
+        </div>
 
         <div className="space-y-6">
           {/* Send to Phone Button - At the top */}
