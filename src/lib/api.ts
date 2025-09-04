@@ -10,7 +10,7 @@ export interface TokenResponse {
 
 // Production mode - connects to your real server
 const DEMO_MODE = false; // Set to false when connecting to real server
-const SERVER_URL = 'http://129.153.161.57:3002'; // Your production server URL
+const SERVER_URL = 'https://api.textlinker.pro'; // Your production server URL
 
 // Simple token generator for demo mode
 function generateDemoToken(): string {
