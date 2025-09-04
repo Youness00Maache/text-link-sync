@@ -13,7 +13,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     if (!token) return;
 
     // Initialize socket connection to your server
-    socketRef.current = io('https://api.textlinker.pro');
+    socketRef.current = io('http://129.153.161.57:3002');
 
     socketRef.current.emit('joinRoom', token);
 
