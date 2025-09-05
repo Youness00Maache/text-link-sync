@@ -28,7 +28,8 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     console.log(`[Socket] Connecting to server for token: ${token}`);
     
     // Initialize socket connection
-    const url = 'http://129.153.161.57:3002';
+    const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+    const url = isHttps ? 'https://api.textlinker.pro' : 'http://129.153.161.57:3002';
     
     socketRef.current = io(url, {
       transports: ['websocket', 'polling'],
@@ -64,14 +65,16 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     socketRef.current.on('connect_error', (error) => {
       console.error(`[Socket] Connection error:`, error);
       setIsConnected(false);
-      
+
       reconnectAttemptsRef.current += 1;
       console.log(`[Socket] connect_error attempt #${reconnectAttemptsRef.current}`);
 
-      if (reconnectAttemptsRef.current === 5) {
+      if (reconnectAttemptsRef.current === 3) {
         toast({
           title: "Having trouble connecting",
-          description: "Retrying in the background. We'll keep trying automatically.",
+          description: window.location.protocol === 'https:'
+            ? "Your browser may be blocking insecure or CORS-misconfigured endpoints. We'll keep trying."
+            : "Retrying in the background. We'll keep trying automatically.",
           variant: "destructive",
         });
       }

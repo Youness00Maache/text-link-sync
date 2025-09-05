@@ -9,12 +9,32 @@ export interface TokenResponse {
 }
 
 // Production mode - connects to your real server
-const DEMO_MODE = false; // Set to false when connecting to real server
-const SERVER_URL = 'http://129.153.161.57:3002'; // Force using IP server for reliability
+const DEMO_MODE = false; // Ensure we hit the real server when available
 
+// Prefer HTTPS when the app runs over HTTPS to avoid mixed-content blocking
+const resolveServerUrl = (): string => {
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    // Try HTTPS domain first; your server/proxy should present a valid TLS cert and CORS
+    return 'https://api.textlinker.pro';
+  }
+  return 'http://129.153.161.57:3002';
+};
 // Simple token generator for demo mode
 function generateDemoToken(): string {
   return Math.random().toString(36).substring(2, 8);
+}
+
+// Small helper to add timeouts and ensure CORS
+async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit & { timeoutMs?: number }) {
+  const timeoutMs = init?.timeoutMs ?? 8000;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const { timeoutMs: _ignored, ...rest } = init || {} as any;
+    return await fetch(input, { ...rest, mode: 'cors', signal: controller.signal });
+  } finally {
+    clearTimeout(id);
+  }
 }
 
 export const api = {
@@ -26,7 +46,8 @@ export const api = {
     }
     
     try {
-      const response = await fetch(`${SERVER_URL}/generate-token`);
+      const base = resolveServerUrl();
+      const response = await fetchWithTimeout(`${base}/generate-token`, { timeoutMs: 8000 });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -51,7 +72,8 @@ export const api = {
     }
 
     try {
-      const response = await fetch(`${SERVER_URL}/text/${token}`);
+      const base = resolveServerUrl();
+      const response = await fetchWithTimeout(`${base}/text/${token}`, { timeoutMs: 8000 });
       if (response.ok) {
         const data: TextResponse = await response.json();
         return data.text;
@@ -72,12 +94,14 @@ export const api = {
     }
 
     try {
-      const response = await fetch(`${SERVER_URL}/upload`, {
+      const base = resolveServerUrl();
+      const response = await fetchWithTimeout(`${base}/upload`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ token, text }),
+        timeoutMs: 8000,
       });
       return response.ok;
     } catch (error) {
