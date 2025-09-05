@@ -12,6 +12,10 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
   const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
   const onTextUpdateRef = useRef(onTextUpdate);
+  // Connection strategy refs
+  const transportCandidatesRef = useRef<string[][]>([['websocket'], ['polling'], ['websocket', 'polling']]);
+  const transportIndexRef = useRef(0);
+  const currentUrlRef = useRef<string>('');
   useEffect(() => {
     onTextUpdateRef.current = onTextUpdate;
   }, [onTextUpdate]);
@@ -29,13 +33,22 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     
     // Initialize socket connection
     const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
-    const url = isHttps ? 'https://api.textlinker.pro' : 'http://129.153.161.57:3002';
-    
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const override = params?.get('server') || undefined;
+    const url = override || (isHttps ? 'https://api.textlinker.pro' : 'http://129.153.161.57:3002');
+    currentUrlRef.current = url;
+
+    const transports = transportCandidatesRef.current[transportIndexRef.current];
+    console.log(`[Socket] Using transports: ${transports.join(', ')} and URL: ${url}`);
+
     socketRef.current = io(url, {
-      transports: ['websocket', 'polling'],
+      transports,
+      forceNew: true,
+      withCredentials: false,
+      path: '/socket.io',
       reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 8000,
+      reconnectionDelay: 800,
+      reconnectionDelayMax: 6000,
       reconnectionAttempts: 10,
       timeout: 10000,
       autoConnect: true
@@ -68,6 +81,22 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
 
       reconnectAttemptsRef.current += 1;
       console.log(`[Socket] connect_error attempt #${reconnectAttemptsRef.current}`);
+
+      // Switch transport strategy on specific attempts
+      if (reconnectAttemptsRef.current === 2 || reconnectAttemptsRef.current === 5) {
+        transportIndexRef.current = Math.min(
+          transportIndexRef.current + 1,
+          transportCandidatesRef.current.length - 1
+        );
+        const nextTransports = transportCandidatesRef.current[transportIndexRef.current];
+        console.log(`[Socket] Switching transports to: ${nextTransports.join(', ')}`);
+        try { socketRef.current?.removeAllListeners(); } catch {}
+        socketRef.current?.disconnect();
+        setTimeout(() => {
+          connectSocket();
+        }, 200);
+        return;
+      }
 
       if (reconnectAttemptsRef.current === 3) {
         toast({

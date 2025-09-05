@@ -13,9 +13,15 @@ const DEMO_MODE = false; // Ensure we hit the real server when available
 
 // Prefer HTTPS when the app runs over HTTPS to avoid mixed-content blocking
 const resolveServerUrl = (): string => {
-  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-    // Try HTTPS domain first; your server/proxy should present a valid TLS cert and CORS
-    return 'https://api.textlinker.pro';
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const override = params.get('server');
+    if (override) return override;
+    if (window.location.protocol === 'https:') {
+      // Try HTTPS domain first; your server/proxy should present a valid TLS cert and CORS
+      return 'https://api.textlinker.pro';
+    }
+    return 'http://129.153.161.57:3002';
   }
   return 'http://129.153.161.57:3002';
 };
