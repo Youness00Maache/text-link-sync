@@ -7,11 +7,16 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
   const navigate = useNavigate();
   const socketRef = useRef<Socket | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const roomJoinTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
+  const onTextUpdateRef = useRef(onTextUpdate);
+  useEffect(() => {
+    onTextUpdateRef.current = onTextUpdate;
+  }, [onTextUpdate]);
 
-  const connectSocket = (retryCount = 0) => {
+  const connectSocket = () => {
     // Clean up existing connection
     if (socketRef.current) {
       console.log(`[Socket] Cleaning up existing connection for token: ${token}`);
@@ -20,19 +25,21 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
       setIsConnected(false);
     }
 
-    console.log(`[Socket] Connecting to server (attempt ${retryCount + 1}) for token: ${token}`);
+    console.log(`[Socket] Connecting to server for token: ${token}`);
     
     // Initialize socket connection
     const url = (typeof window !== 'undefined' && window.location.protocol === 'https:') 
       ? 'https://api.textlinker.pro' 
       : 'http://129.153.161.57:3002';
     
-    socketRef.current = io(url, { 
-      transports: ['websocket'],
+    socketRef.current = io(url, {
+      transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
-      timeout: 10000
+      reconnectionDelayMax: 8000,
+      reconnectionAttempts: 10,
+      timeout: 10000,
+      autoConnect: true
     });
 
     // Connection successful
@@ -44,6 +51,15 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
       
       // Join room after successful connection
       socketRef.current?.emit('joinRoom', token);
+
+      // Safety: retry join once after 2s if no confirmation
+      if (roomJoinTimeoutRef.current) {
+        clearTimeout(roomJoinTimeoutRef.current);
+      }
+      roomJoinTimeoutRef.current = setTimeout(() => {
+        console.log('[Socket] Re-emitting joinRoom as safeguard');
+        socketRef.current?.emit('joinRoom', token);
+      }, 2000);
     });
 
     // Connection error handling
@@ -51,13 +67,13 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
       console.error(`[Socket] Connection error:`, error);
       setIsConnected(false);
       
-      if (retryCount < 5) {
-        console.log(`[Socket] Retrying connection in 1 second... (${retryCount + 1}/5)`);
-        setTimeout(() => connectSocket(retryCount + 1), 1000);
-      } else {
+      reconnectAttemptsRef.current += 1;
+      console.log(`[Socket] connect_error attempt #${reconnectAttemptsRef.current}`);
+
+      if (reconnectAttemptsRef.current === 5) {
         toast({
-          title: "Connection failed",
-          description: "Unable to connect to server. Please check your internet connection.",
+          title: "Having trouble connecting",
+          description: "Retrying in the background. We'll keep trying automatically.",
           variant: "destructive",
         });
       }
@@ -69,9 +85,9 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
       setIsConnected(false);
       
       if (reason === 'io server disconnect') {
-        // Server disconnected - attempt reconnection
-        console.log('[Socket] Server disconnected, attempting reconnection...');
-        setTimeout(() => connectSocket(0), 1000);
+        // Need to manually reconnect
+        console.log('[Socket] Server disconnected, calling socket.connect()...');
+        socketRef.current?.connect();
       }
     });
 
@@ -81,6 +97,15 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
       setIsConnected(true);
       // Re-join room after reconnection
       socketRef.current?.emit('joinRoom', token);
+
+      // Safety: retry join once after 2s if no confirmation
+      if (roomJoinTimeoutRef.current) {
+        clearTimeout(roomJoinTimeoutRef.current);
+      }
+      roomJoinTimeoutRef.current = setTimeout(() => {
+        console.log('[Socket] Re-emitting joinRoom after reconnect as safeguard');
+        socketRef.current?.emit('joinRoom', token);
+      }, 2000);
     });
 
     socketRef.current.on('reconnect_error', (error) => {
@@ -88,22 +113,24 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     });
 
     // Text update handling with enhanced logging
-    if (onTextUpdate) {
-      socketRef.current.on('textUpdate', ({ text }) => {
-        console.log(`[Socket] Text received for token ${token}:`, text?.substring(0, 50) + '...');
-        onTextUpdate(text);
-        
-        // Auto-navigate to titles after receiving text
-        if (window.location.pathname === '/' && text) {
-          console.log(`[Socket] Auto-navigating to titles page`);
-          navigate(`/titles?token=${token}`);
-        }
-      });
-    }
+    socketRef.current.on('textUpdate', ({ text }) => {
+      console.log(`[Socket] Text received for token ${token}:`, text?.substring(0, 50) + '...');
+      onTextUpdateRef.current?.(text);
+      
+      // Auto-navigate to titles after receiving text
+      if (window.location.pathname === '/' && text) {
+        console.log(`[Socket] Auto-navigating to titles page`);
+        navigate(`/titles?token=${token}`);
+      }
+    });
 
     // Room join confirmation
     socketRef.current.on('roomJoined', (roomToken) => {
       console.log(`[Socket] Successfully joined room: ${roomToken}`);
+      if (roomJoinTimeoutRef.current) {
+        clearTimeout(roomJoinTimeoutRef.current);
+        roomJoinTimeoutRef.current = null;
+      }
     });
 
     // Error handling for room operations
@@ -124,7 +151,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     }
 
     console.log(`[Socket] Initializing connection for token: ${token}`);
-    connectSocket(0);
+    connectSocket();
 
     // Set 15-minute timeout for connection
     timeoutRef.current = setTimeout(() => {
@@ -146,8 +173,12 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
+      if (roomJoinTimeoutRef.current) {
+        clearTimeout(roomJoinTimeoutRef.current);
+        roomJoinTimeoutRef.current = null;
+      }
     };
-  }, [token, onTextUpdate, navigate, toast]);
+  }, [token, navigate]);
 
   return { socket: socketRef.current, isConnected };
 };
