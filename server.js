@@ -1,4 +1,4 @@
-// TextLinker Server with Chunked Upload Support2
+// TextLinker Server with Chunked Upload Support - FIXED
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -7,28 +7,33 @@ const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
+
+// CRITICAL: Proper Socket.IO configuration with CORS
 const io = socketIo(server, {
     cors: {
         origin: "*",
-        methods: ["GET", "POST"]
-    }
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    // Add these for better connectivity
+    transports: ['websocket', 'polling'],
+    allowEIO3: true
 });
+
+// CORS middleware - MUST be before routes
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+    credentials: true
+}));
 
 // Body parser with increased limit for chunked uploads
-app.use(express.json({ limit: '1mb' }));
-app.use(express.static('public'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// CORS headers
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    if (req.method === 'OPTIONS') {
-        res.sendStatus(200);
-    } else {
-        next();
-    }
-});
+// Serve static files AFTER CORS
+app.use(express.static(path.join(__dirname, 'public')));
 
 // In-memory storage
 const textCache = {};
@@ -61,7 +66,7 @@ function processUploadedText(token, text) {
     
     // Broadcast to all clients in the room
     io.to(token).emit('textUpdate', { text });
-    console.log(`[broadcast] Sent textUpdate to room=${masked}`);
+    console.log(`[broadcast] Sent textUpdate to room=${masked} connected sockets=${io.sockets.adapter.rooms.get(token)?.size || 0}`);
 }
 
 // Cleanup expired chunk assemblies every minute
@@ -75,7 +80,20 @@ setInterval(() => {
     }
 }, 60 * 1000);
 
-// Routes
+// EXPLICIT HTML ROUTES - IMPORTANT!
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/titles', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'titles.html'));
+});
+
+app.get('/text', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'text.html'));
+});
+
+// API Routes
 app.get('/generate-token', (req, res) => {
     const token = generateToken();
     console.log(`[generate-token] Generated token=${maskToken(token)}`);
@@ -107,10 +125,10 @@ app.post('/upload', (req, res) => {
     
     console.log(`[upload] token=${masked} len=${text.length} at=${new Date().toISOString()}`);
     processUploadedText(token, text);
-    res.json({ message: 'Text received' });
+    res.json({ message: 'Text received', success: true });
 });
 
-// NEW: Chunked upload endpoint
+// Chunked upload endpoint
 app.post('/upload-chunk', (req, res) => {
     const { token, chunkIndex, totalChunks, textChunk } = req.body || {};
     
@@ -183,14 +201,39 @@ app.post('/upload-chunk', (req, res) => {
     });
 });
 
-// Socket.IO connection handling
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        server: 'TextLinker',
+        timestamp: new Date().toISOString(),
+        connections: io.sockets.sockets.size
+    });
+});
+
+// Socket.IO connection handling with better error handling
 io.on('connection', (socket) => {
-    console.log(`[socket] Client connected: ${socket.id}`);
+    console.log(`[socket] Client connected: ${socket.id} from ${socket.handshake.address}`);
+    
+    // Send connection confirmation
+    socket.emit('connected', { id: socket.id });
 
     socket.on('joinRoom', (token) => {
+        if (!token) {
+            console.log(`[socket] Invalid token from ${socket.id}`);
+            socket.emit('error', { message: 'Invalid token' });
+            return;
+        }
+        
         const masked = maskToken(token);
         socket.join(token);
         console.log(`[socket] Client ${socket.id} joined room=${masked}`);
+        
+        // Immediately send existing text if available
+        if (textCache[token]) {
+            console.log(`[socket] Sending cached text to ${socket.id} for token=${masked}`);
+            socket.emit('textUpdate', { text: textCache[token] });
+        }
     });
 
     socket.on('sendText', (data) => {
@@ -200,6 +243,9 @@ io.on('connection', (socket) => {
         
         if (token && text) {
             processUploadedText(token, text);
+            socket.emit('sendSuccess', { message: 'Text sent successfully' });
+        } else {
+            socket.emit('error', { message: 'Token and text are required' });
         }
     });
 
@@ -210,13 +256,68 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('textUpdate', data);
     });
 
-    socket.on('disconnect', () => {
-        console.log(`[socket] Client disconnected: ${socket.id}`);
+    socket.on('ping', () => {
+        socket.emit('pong');
+    });
+
+    socket.on('error', (error) => {
+        console.error(`[socket] Error from ${socket.id}:`, error);
+    });
+
+    socket.on('disconnect', (reason) => {
+        console.log(`[socket] Client disconnected: ${socket.id} - Reason: ${reason}`);
     });
 });
 
-// Start server
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('[error]', err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// 404 handler
+app.use((req, res) => {
+    console.log(`[404] Not found: ${req.method} ${req.url}`);
+    res.status(404).json({ error: 'Not found' });
+});
+
+// Start server with better error handling
 const PORT = process.env.PORT || 3002;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running and listening at http://0.0.0.0:${PORT}`);
+    console.log(`
+========================================
+TextLinker Server Started Successfully!
+========================================
+Server URL: http://0.0.0.0:${PORT}
+External URL: http://129.153.161.57:${PORT}
+Environment: ${process.env.NODE_ENV || 'development'}
+Time: ${new Date().toISOString()}
+========================================
+    `);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+    console.error('[server] Error:', error);
+    if (error.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use`);
+        process.exit(1);
+    }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('[shutdown] SIGTERM received, closing server...');
+    server.close(() => {
+        console.log('[shutdown] Server closed');
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('[shutdown] SIGINT received, closing server...');
+    server.close(() => {
+        console.log('[shutdown] Server closed');
+        process.exit(0);
+    });
 });
