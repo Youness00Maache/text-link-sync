@@ -28,9 +28,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     console.log(`[Socket] Connecting to server for token: ${token}`);
     
     // Initialize socket connection
-    const url = (typeof window !== 'undefined' && window.location.protocol === 'https:') 
-      ? 'https://api.textlinker.pro' 
-      : 'http://129.153.161.57:3002';
+    const url = 'http://129.153.161.57:3002';
     
     socketRef.current = io(url, {
       transports: ['websocket', 'polling'],
