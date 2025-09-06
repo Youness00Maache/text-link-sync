@@ -19,7 +19,7 @@ const resolveServerUrl = (): string => {
     if (override) return override;
     if (window.location.protocol === 'https:') {
       // Try HTTPS domain first; your server/proxy should present a valid TLS cert and CORS
-      return 'https://api.textlinker.pro';
+      return 'http://129.153.161.57:3002';
     }
     return 'http://129.153.161.57:3002';
   }

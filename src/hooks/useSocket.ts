@@ -35,7 +35,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
     const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const override = params?.get('server') || undefined;
-    const url = override || (isHttps ? 'https://api.textlinker.pro' : 'http://129.153.161.57:3002');
+    const url = override || (isHttps ? 'http://129.153.161.57:3002' : 'http://129.153.161.57:3002');
     currentUrlRef.current = url;
 
     const transports = transportCandidatesRef.current[transportIndexRef.current];
