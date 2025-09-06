@@ -35,14 +35,15 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
     const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const override = params?.get('server') || undefined;
-    const url = override || (isHttps ? 'http://129.153.161.57:3002' : 'http://129.153.161.57:3002');
+    const base = override || 'http://129.153.161.57:3002';
+    const url = isHttps ? `https://thingproxy.freeboard.io/fetch/${base}` : base;
     currentUrlRef.current = url;
-
-    const transports = transportCandidatesRef.current[transportIndexRef.current];
+    const transports = isHttps ? ['polling'] : transportCandidatesRef.current[transportIndexRef.current];
     console.log(`[Socket] Using transports: ${transports.join(', ')} and URL: ${url}`);
 
     socketRef.current = io(url, {
       transports,
+      upgrade: !isHttps,
       forceNew: true,
       withCredentials: false,
       path: '/socket.io',

@@ -47,6 +47,24 @@ const Titles = () => {
     loadInitialText();
   }, [token, navigate]);
 
+  // Polling fallback over HTTPS when realtime cannot connect
+  useEffect(() => {
+    if (!token) return;
+    const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+    let interval: any;
+    if (isHttps && !isConnected) {
+      interval = setInterval(async () => {
+        const text = await api.getText(token);
+        if (text && text !== originalText) {
+          handleTextUpdate(text);
+        }
+      }, 4000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [token, isConnected, originalText]);
+
   const handleNoteSelect = (index: number) => {
     navigate(`/text?token=${token}&index=${index}`);
   };

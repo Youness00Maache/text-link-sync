@@ -35,9 +35,18 @@ async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit & {
   const timeoutMs = init?.timeoutMs ?? 8000;
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
+  const needsProxy = (url: string) => (typeof window !== 'undefined' && window.location.protocol === 'https:' && url.startsWith('http://'));
+  const toProxied = (url: string) => `https://thingproxy.freeboard.io/fetch/${url}`;
   try {
-    const { timeoutMs: _ignored, ...rest } = init || {} as any;
-    return await fetch(input, { ...rest, mode: 'cors', signal: controller.signal });
+    const { timeoutMs: _ignored, ...rest } = init || ({} as any);
+    let finalInput: RequestInfo | URL = input;
+    if (typeof input === 'string') {
+      finalInput = needsProxy(input) ? toProxied(input) : input;
+    } else if (input instanceof URL) {
+      const s = input.toString();
+      finalInput = needsProxy(s) ? toProxied(s) : input;
+    }
+    return await fetch(finalInput, { ...rest, mode: 'cors', signal: controller.signal });
   } finally {
     clearTimeout(id);
   }
