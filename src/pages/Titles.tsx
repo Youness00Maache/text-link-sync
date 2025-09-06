@@ -103,12 +103,6 @@ const Titles = () => {
             <><WifiOff className="h-4 w-4 mr-2" /> Reconnecting...</>
           )}
         </div>
-        {/* HTTPS fallback notice */}
-        {typeof window !== 'undefined' && window.location.protocol === 'https:' && !isConnected && (
-          <div className="text-xs text-muted-foreground mb-4">
-            Secure pages cannot connect directly to HTTP servers. We're using a proxied socket; if that fails, we'll poll every 4s.
-          </div>
-        )}
 
         <div className="space-y-6">
           {/* Send to Phone Button - At the top */}

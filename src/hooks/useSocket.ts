@@ -38,7 +38,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     const base = override || 'http://129.153.161.57:3002';
     const url = isHttps ? (typeof window !== 'undefined' ? window.location.origin : '') : base;
     currentUrlRef.current = url;
-    const transports = isHttps ? ['websocket'] : transportCandidatesRef.current[transportIndexRef.current];
+    const transports = isHttps ? ['websocket', 'polling'] : transportCandidatesRef.current[transportIndexRef.current];
     console.log(`[Socket] Using transports: ${transports.join(', ')} and URL: ${url}`);
 
     socketRef.current = io(url, {
