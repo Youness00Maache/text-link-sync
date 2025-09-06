@@ -15,13 +15,18 @@ const DEMO_MODE = false; // Ensure we hit the real server when available
 const resolveServerUrl = (): string => {
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
-    const override = params.get('server');
-    if (override) return override;
-    if (window.location.protocol === 'https:') {
-      // Try HTTPS domain first; your server/proxy should present a valid TLS cert and CORS
-      return 'http://129.153.161.57:3002';
+    const override = params.get('server') || undefined;
+    const isHttps = window.location.protocol === 'https:';
+
+    // When running over HTTPS, use same-origin and rely on the dev proxy to avoid mixed-content
+    if (isHttps) {
+      // If an override is provided but it's insecure (http://), ignore it to prevent mixed content
+      if (override && override.startsWith('https://')) return override;
+      return '';
     }
-    return 'http://129.153.161.57:3002';
+
+    // HTTP environments can talk to the server directly
+    return override || 'http://129.153.161.57:3002';
   }
   return 'http://129.153.161.57:3002';
 };
@@ -35,18 +40,9 @@ async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit & {
   const timeoutMs = init?.timeoutMs ?? 8000;
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
-  const needsProxy = (url: string) => (typeof window !== 'undefined' && window.location.protocol === 'https:' && url.startsWith('http://'));
-  const toProxied = (url: string) => `https://thingproxy.freeboard.io/fetch/${url}`;
   try {
     const { timeoutMs: _ignored, ...rest } = init || ({} as any);
-    let finalInput: RequestInfo | URL = input;
-    if (typeof input === 'string') {
-      finalInput = needsProxy(input) ? toProxied(input) : input;
-    } else if (input instanceof URL) {
-      const s = input.toString();
-      finalInput = needsProxy(s) ? toProxied(s) : input;
-    }
-    return await fetch(finalInput, { ...rest, mode: 'cors', signal: controller.signal });
+    return await fetch(input, { ...rest, mode: 'cors', signal: controller.signal });
   } finally {
     clearTimeout(id);
   }

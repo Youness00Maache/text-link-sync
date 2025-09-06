@@ -92,7 +92,7 @@ const Titles = () => {
         />
 
         {/* Connection Status Indicator */}
-        <div className={`flex items-center justify-center py-2 px-4 rounded-lg mb-4 ${
+        <div className={`flex items-center justify-center py-2 px-4 rounded-lg mb-2 ${
           isConnected 
             ? 'bg-green-50 text-green-700 border border-green-200' 
             : 'bg-red-50 text-red-700 border border-red-200'
@@ -103,6 +103,12 @@ const Titles = () => {
             <><WifiOff className="h-4 w-4 mr-2" /> Reconnecting...</>
           )}
         </div>
+        {/* HTTPS fallback notice */}
+        {typeof window !== 'undefined' && window.location.protocol === 'https:' && !isConnected && (
+          <div className="text-xs text-muted-foreground mb-4">
+            Secure pages cannot connect directly to HTTP servers. We're using a proxied socket; if that fails, we'll poll every 4s.
+          </div>
+        )}
 
         <div className="space-y-6">
           {/* Send to Phone Button - At the top */}

@@ -8,6 +8,25 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      "/generate-token": {
+        target: "http://129.153.161.57:3002",
+        changeOrigin: true,
+      },
+      "/text": {
+        target: "http://129.153.161.57:3002",
+        changeOrigin: true,
+      },
+      "/upload": {
+        target: "http://129.153.161.57:3002",
+        changeOrigin: true,
+      },
+      "/socket.io": {
+        target: "http://129.153.161.57:3002",
+        changeOrigin: true,
+        ws: true,
+      },
+    },
   },
   plugins: [
     react(),
