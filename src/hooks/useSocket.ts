@@ -16,6 +16,9 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
   const transportCandidatesRef = useRef<string[][]>([['websocket'], ['polling'], ['websocket', 'polling']]);
   const transportIndexRef = useRef(0);
   const currentUrlRef = useRef<string>('');
+  // Socket path strategy refs (bypass blockers via proxy alias)
+  const socketPathCandidatesRef = useRef<string[]>(['/socket.io', '/_sio']);
+  const socketPathIndexRef = useRef(0);
   useEffect(() => {
     onTextUpdateRef.current = onTextUpdate;
   }, [onTextUpdate]);
@@ -39,7 +42,10 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     const url = isHttps ? (typeof window !== 'undefined' ? window.location.origin : '') : base;
     currentUrlRef.current = url;
     const transports = isHttps ? ['polling'] : transportCandidatesRef.current[transportIndexRef.current];
-    console.log(`[Socket] Using transports: ${transports.join(', ')} and URL: ${url}`);
+    // Decide socket path alias for HTTPS
+    socketPathIndexRef.current = isHttps ? 1 : 0;
+    const socketPath = socketPathCandidatesRef.current[socketPathIndexRef.current];
+    console.log(`[Socket] Using transports: ${transports.join(', ')} URL: ${url} PATH: ${socketPath}`);
 
     socketRef.current = io(url, {
       transports,
@@ -47,7 +53,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
       rememberUpgrade: true,
       forceNew: true,
       withCredentials: false,
-      path: '/socket.io',
+      path: socketPath,
       reconnection: true,
       reconnectionDelay: 800,
       reconnectionDelayMax: 6000,
@@ -84,13 +90,18 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
       reconnectAttemptsRef.current += 1;
       console.log(`[Socket] connect_error attempt #${reconnectAttemptsRef.current}`);
 
-      // Switch transport strategy on specific attempts
+      // Switch transport strategy and path alias on specific attempts
       if (reconnectAttemptsRef.current === 2 || reconnectAttemptsRef.current === 5) {
         transportIndexRef.current = Math.min(
           transportIndexRef.current + 1,
           transportCandidatesRef.current.length - 1
         );
         const nextTransports = transportCandidatesRef.current[transportIndexRef.current];
+        const isHttpsNow = typeof window !== 'undefined' && window.location.protocol === 'https:';
+        if (isHttpsNow) {
+          socketPathIndexRef.current = socketPathIndexRef.current === 0 ? 1 : 0;
+          console.log(`[Socket] Switching socket PATH to: ${socketPathCandidatesRef.current[socketPathIndexRef.current]}`);
+        }
         console.log(`[Socket] Switching transports to: ${nextTransports.join(', ')}`);
         try { socketRef.current?.removeAllListeners(); } catch {}
         socketRef.current?.disconnect();

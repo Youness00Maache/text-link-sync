@@ -26,6 +26,12 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         ws: true,
       },
+      "/_sio": {
+        target: "http://129.153.161.57:3002",
+        changeOrigin: true,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/_sio/, '/socket.io'),
+      },
     },
   },
   plugins: [
