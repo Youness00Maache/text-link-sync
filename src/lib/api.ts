@@ -37,7 +37,7 @@ function generateDemoToken(): string {
 
 // Small helper to add timeouts and ensure CORS
 async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit & { timeoutMs?: number }) {
-  const timeoutMs = init?.timeoutMs ?? 8000;
+  const timeoutMs = init?.timeoutMs ?? 12000;
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -58,7 +58,7 @@ export const api = {
     
     try {
       const base = resolveServerUrl();
-      const response = await fetchWithTimeout(`${base}/generate-token`, { timeoutMs: 8000 });
+      const response = await fetchWithTimeout(`${base}/generate-token`, { timeoutMs: 12000 });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -84,7 +84,7 @@ export const api = {
 
     try {
       const base = resolveServerUrl();
-      const response = await fetchWithTimeout(`${base}/text/${token}`, { timeoutMs: 8000 });
+      const response = await fetchWithTimeout(`${base}/text/${token}`, { timeoutMs: 12000 });
       if (response.ok) {
         const data: TextResponse = await response.json();
         return data.text;
@@ -106,14 +106,21 @@ export const api = {
 
     try {
       const base = resolveServerUrl();
-      const response = await fetchWithTimeout(`${base}/upload`, {
+      const attempt = async () => fetchWithTimeout(`${base}/upload`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ token, text }),
-        timeoutMs: 8000,
+        timeoutMs: 12000,
       });
+
+      let response = await attempt();
+      if (!response.ok) {
+        // brief retry once
+        await new Promise((r) => setTimeout(r, 600));
+        response = await attempt();
+      }
       return response.ok;
     } catch (error) {
       console.error('Error sending text to phone:', error);

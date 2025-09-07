@@ -100,7 +100,12 @@ const Titles = () => {
           {isConnected ? (
             <><Wifi className="h-4 w-4 mr-2" /> Connected</>
           ) : (
-            <><WifiOff className="h-4 w-4 mr-2" /> Reconnecting...</>
+            <>
+              <WifiOff className="h-4 w-4 mr-2" />
+              {typeof window !== 'undefined' && window.location.protocol === 'https:'
+                ? 'Polling for updates...'
+                : 'Reconnecting...'}
+            </>
           )}
         </div>
 

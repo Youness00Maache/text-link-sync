@@ -50,7 +50,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     socketRef.current = io(url, {
       transports,
       upgrade: true,
-      rememberUpgrade: true,
+      rememberUpgrade: !isHttps,
       forceNew: true,
       withCredentials: false,
       path: socketPath,
@@ -58,7 +58,7 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
       reconnectionDelay: 800,
       reconnectionDelayMax: 6000,
       reconnectionAttempts: 10,
-      timeout: 10000,
+      timeout: 15000,
       autoConnect: true
     });
 
