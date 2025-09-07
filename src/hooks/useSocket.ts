@@ -38,12 +38,13 @@ export const useSocket = (token: string | null, onTextUpdate?: (text: string) =>
     const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
     const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const override = params?.get('server') || undefined;
-    const base = override || 'http://129.153.161.57:3002';
-    const url = isHttps ? (typeof window !== 'undefined' ? window.location.origin : '') : base;
+    const defaultBase = isHttps ? 'https://api.textlinker.pro' : 'http://api.textlinker.pro';
+    const base = override || defaultBase;
+    const url = base;
     currentUrlRef.current = url;
     const transports = isHttps ? ['polling'] : transportCandidatesRef.current[transportIndexRef.current];
-    // Decide socket path alias for HTTPS
-    socketPathIndexRef.current = isHttps ? 1 : 0;
+    // For HTTPS to secure API host, use standard socket.io path
+    socketPathIndexRef.current = 0;
     const socketPath = socketPathCandidatesRef.current[socketPathIndexRef.current];
     console.log(`[Socket] Using transports: ${transports.join(', ')} URL: ${url} PATH: ${socketPath}`);
 

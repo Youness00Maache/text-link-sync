@@ -13,22 +13,21 @@ const DEMO_MODE = false; // Ensure we hit the real server when available
 
 // Prefer HTTPS when the app runs over HTTPS to avoid mixed-content blocking
 const resolveServerUrl = (): string => {
+  const DEFAULT_SECURE_BASE = 'https://api.textlinker.pro';
+  const DEFAULT_INSECURE_BASE = 'http://api.textlinker.pro';
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
     const override = params.get('server') || undefined;
     const isHttps = window.location.protocol === 'https:';
 
-    // When running over HTTPS, use same-origin and rely on the dev proxy to avoid mixed-content
     if (isHttps) {
-      // If an override is provided but it's insecure (http://), ignore it to prevent mixed content
       if (override && override.startsWith('https://')) return override;
-      return '';
+      return DEFAULT_SECURE_BASE;
     }
 
-    // HTTP environments can talk to the server directly
-    return override || 'http://129.153.161.57:3002';
+    return override || DEFAULT_INSECURE_BASE;
   }
-  return 'http://129.153.161.57:3002';
+  return DEFAULT_INSECURE_BASE;
 };
 // Simple token generator for demo mode
 function generateDemoToken(): string {

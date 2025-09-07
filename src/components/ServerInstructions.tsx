@@ -15,7 +15,7 @@ export const ServerInstructions = () => {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Connected to <strong>129.153.161.57:3002</strong> server. Your app is ready to share text with your phone!
+            Connected to <strong>api.textlinker.pro</strong> server. Your app is ready to share text with your phone!
           </AlertDescription>
         </Alert>
         

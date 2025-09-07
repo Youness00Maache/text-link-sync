@@ -10,24 +10,24 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       "/generate-token": {
-        target: "http://129.153.161.57:3002",
+        target: "https://api.textlinker.pro",
         changeOrigin: true,
       },
       "/text": {
-        target: "http://129.153.161.57:3002",
+        target: "https://api.textlinker.pro",
         changeOrigin: true,
       },
       "/upload": {
-        target: "http://129.153.161.57:3002",
+        target: "https://api.textlinker.pro",
         changeOrigin: true,
       },
       "/socket.io": {
-        target: "http://129.153.161.57:3002",
+        target: "https://api.textlinker.pro",
         changeOrigin: true,
         ws: true,
       },
       "/_sio": {
-        target: "http://129.153.161.57:3002",
+        target: "https://api.textlinker.pro",
         changeOrigin: true,
         ws: true,
         rewrite: (path) => path.replace(/^\/_sio/, '/socket.io'),
