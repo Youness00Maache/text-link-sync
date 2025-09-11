@@ -52,7 +52,7 @@ const Home = () => {
         {/* Privacy Policy Link */}
         <div className="text-center mt-8">
           <Link 
-            to="/privacy.html" 
+            to="/privacy" 
             className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
           >
             Privacy Policy
