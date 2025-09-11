@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Titles from "./pages/Titles";
 import Text from "./pages/Text";
 import Send from "./pages/Send";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/titles" element={<Titles />} />
           <Route path="/text" element={<Text />} />
           <Route path="/send" element={<Send />} />
+          <Route path="/privacy" element={<Privacy />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
