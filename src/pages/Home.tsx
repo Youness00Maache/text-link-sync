@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { QRCodeGenerator } from '@/components/QRCodeGenerator';
@@ -48,6 +48,16 @@ const Home = () => {
             />
           </CardContent>
         </Card>
+
+        {/* Privacy Policy Link */}
+        <div className="text-center mt-8">
+          <Link 
+            to="/privacy" 
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            Privacy Policy
+          </Link>
+        </div>
 
       </div>
     </div>
