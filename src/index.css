@@ -130,6 +130,9 @@
   body {
     @apply bg-background text-foreground font-nunito;
     font-feature-settings: 'kern' 1, 'liga' 1;
+    font-display: swap;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
