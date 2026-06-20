@@ -16,12 +16,3 @@ const revealObserver = new IntersectionObserver(entries => {
 }, { threshold: 0.14 });
 
 document.querySelectorAll('.reveal').forEach(element => revealObserver.observe(element));
-
-const updateScrollProgress = () => {
-  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-  const progress = maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0;
-  document.documentElement.style.setProperty('--scroll-progress', progress + '%');
-};
-
-window.addEventListener('scroll', updateScrollProgress, { passive: true });
-updateScrollProgress();

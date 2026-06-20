@@ -68,38 +68,6 @@
       margin: 0 auto;
     }
 
-    .site-header {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 30;
-      height: 88px;
-      pointer-events: none;
-    }
-
-    .nav {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      width: 184px;
-      text-decoration: none;
-      pointer-events: auto;
-    }
-
-    .brand img {
-      width: 100%;
-      filter: invert(1) brightness(1.2);
-    }
-
-    .nav-cta,
     .primary-cta,
     .secondary-cta,
     .final-cta {
@@ -115,29 +83,12 @@
       transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
     }
 
-    .nav-cta {
-      width: 48px;
-      min-width: 48px;
-      height: 48px;
-      padding: 0;
-      background: var(--green);
-      color: #041008;
-      pointer-events: auto;
-    }
-
-    .nav-cta svg {
-      width: 22px;
-      height: 22px;
-    }
-
-    .nav-cta:hover,
     .primary-cta:hover,
     .final-cta:hover {
       transform: translateY(-2px);
       background: #72ffaa;
     }
 
-    .nav-cta svg,
     .primary-cta svg,
     .secondary-cta svg,
     .final-cta svg {
@@ -147,7 +98,6 @@
       transition: transform 180ms ease;
     }
 
-    .nav-cta:hover svg,
     .primary-cta:hover svg,
     .final-cta:hover svg {
       transform: scale(1.12) rotate(4deg);
@@ -1089,17 +1039,6 @@
         width: min(100% - 28px, 1160px);
       }
 
-      .brand {
-        width: 148px;
-      }
-
-      .nav-cta {
-        width: 44px;
-        min-width: 44px;
-        height: 44px;
-        padding: 0;
-      }
-
       .hero {
         min-height: 100svh;
       }
@@ -1256,17 +1195,6 @@
   </script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container nav">
-      <a class="brand" href="/" aria-label="TextLinker home">
-        <img src="/TextLinkerAppLogo.png" alt="TextLinker">
-      </a>
-      <a class="nav-cta" href="/receive" aria-label="Generate a QR code">
-        <i data-lucide="scan-line" aria-hidden="true"></i>
-      </a>
-    </div>
-  </header>
-
   <main>
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-scene" aria-hidden="true">

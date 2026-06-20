@@ -182,6 +182,11 @@ img {
   padding: 76px 0;
 }
 
+.privacy-hero .hero-inner {
+  padding-left: clamp(30px, 5vw, 52px);
+  padding-right: clamp(30px, 5vw, 52px);
+}
+
 .hero-icon {
   position: absolute;
   right: 4%;
