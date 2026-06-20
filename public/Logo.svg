@@ -1,0 +1,9 @@
+<svg width="360" height="96" viewBox="0 0 360 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">TextLinker</title>
+  <desc id="desc">TextLinker wordmark with a simple linked text icon.</desc>
+  <rect x="8" y="18" width="54" height="54" rx="10" fill="#1B1B1B"/>
+  <rect x="34" y="28" width="54" height="54" rx="10" fill="#FFFFFF" stroke="#1B1B1B" stroke-width="6"/>
+  <path d="M26 37H48M26 48H48M26 59H40" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+  <path d="M52 47H74M52 58H74M52 69H66" stroke="#1B1B1B" stroke-width="5" stroke-linecap="round"/>
+  <text x="108" y="59" fill="#1B1B1B" font-family="Nunito, Arial, sans-serif" font-size="38" font-weight="700">TextLinker</text>
+</svg>

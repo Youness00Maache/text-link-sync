@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TextLinker - Note Content</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous">
+  <!-- Nunito font -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: #ffffff;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+    }
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);line       width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+    .back-icon,
+    .qr-icon {
+      cursor: pointer;
+      font-size: 24px;
+      color: #1B1B1B;
+    }
+    .logo {
+      max-width: 120px;
+      /* Center the logo by margin auto on left/right if needed */
+      display: block;
+      margin: 0 auto;
+    }
+    /* Title row: note title left, copy icon right */
+    .title-row {line        display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .note-title {
+      font-size: 22px;
+      color: #1B1B1B;
+      text-align: left;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .copy-icon {
+      cursor: pointer;
+      font-size: 22px;
+      color: #1B1B1B;
+      margin-left: 10px;
+    }
+    .content-box {
+      background-color: #f8f8f8;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      text-align: left;line       white-space: pre-wrap;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header remains unchanged -->
+    <div class="header">
+      <i class="fas fa-chevron-left back-icon" onclick="goBack()" title="Back to Titles"></i>
+      <img class="logo" src="/TextLinkerLogo.png" alt="TextLinker Logo">
+      <i class="fas fa-qrcode qr-icon" onclick="goToQR()" title="Generate New QR Code"></i>
+    </div>
+    <!-- Title row: displays the note title and the copy icon to the right -->
+    <div class="title-row">
+      <h2 id="noteTitle" class="note-title">Loading title...</h2>
+      <i class="fas fa-copy copy-icon" onclick="copyContent()" title="Copy Text"></i>
+    </div>
+    <!-- Content area -->
+    <div id="contentDisplay" class="content-box">Loading content...</div>
+  </div>
+
+  <script>
+    // Helper to get query parameters
+    function getQueryParam(param) \{\par
+      const params = new URLSearchParams(window.location.search);\line       return params.get(param);\par
+    \}\par
+    const token = getQueryParam('token');\par
+    const index = getQueryParam('index');\par
+
+    function goBack() \{\par
+      window.location.href = '/titles.html?token=' + token;\par
+    \}\par
+    function goToQR() \{\par
+      window.location.href = '/?showQR=1';\par
+    \}\par
+
+    async function loadContent() \{\par
+      try \{\par
+        const response = await fetch('/text/' + token);\par
+        if (response.ok) \{\par
+          const data = await response.json();\par
+          // Split text into blocks separated by two or more newlines\par
+          const blocks = data.text.split(/\\n\\s*\\n/).filter(block => block.trim() !== '');\par
+          let notes = [];\par
+          for (let i = 0; i < blocks.length; i += 2) \{\par
+            let note = \{ title: "", content: "" \};\par
+            if (blocks[i].toLowerCase().startsWith('title:')) \{\par
+              note.title = blocks[i].substring(6).replace(/["\ldblquote\rdblquote ]+/g, '').trim();\par
+            \} else \{\par
+              note.title = blocks[i].replace(/["\ldblquote\rdblquote ]+/g, '').trim();\par
+            \}\par
+            if (i + 1 < blocks.length) \{\par
+              if (blocks[i + 1].toLowerCase().startsWith('content:')) \{\par
+                note.content = blocks[i + 1].substring(8).replace(/["\ldblquote\rdblquote ]+/g, '').trim();\par
+              \} else \{\par
+                note.content = blocks[i + 1].replace(/["\ldblquote\rdblquote ]+/g, '').trim();\par
+              \}\par
+            \}\par
+            notes.push(note);\par
+          \}\par
+          if (index >= notes.length) \{\par
+            document.getElementById('contentDisplay').innerText = 'No text found for this note.';\par
+            document.getElementById('noteTitle').innerText = '';\par
+            return;\par
+          \}\par
+          const note = notes[index];\par
+          document.getElementById('noteTitle').innerText = note.title || "Untitled";\par
+          document.getElementById('contentDisplay').innerText = note.content || 'No content found.';\par
+        \} else \{\par
+          document.getElementById('contentDisplay').innerText = 'Error: ' + response.status;\par
+          document.getElementById('noteTitle').innerText = '';\par
+        \}\par
+      \} catch (error) \{\par
+        console.error('Error loading content:', error);\par
+        document.getElementById('contentDisplay').innerText = 'Error loading content.';\par
+        document.getElementById('noteTitle').innerText = '';\line      \}\par
+    \}\par
+
+    async function copyContent() \{\par
+      const title = document.getElementById('noteTitle').innerText;\par
+      const content = document.getElementById('contentDisplay').innerText;\par
+      const textToCopy = title + "\\n" + content;\par
+      try \{\par
+        await navigator.clipboard.writeText(textToCopy);\par
+        alert('Content copied to clipboard!');\par
+      \} catch (error) \{\par
+        console.error('Error using Clipboard API:', error);\par
+        // Fallback: Create a temporary textarea\par
+        const tempTextArea = document.createElement('textarea');\par
+        tempTextArea.value = textToCopy;\par
+        document.body.appendChild(tempTextArea);\par
+        tempTextArea.select();\par
+        try \{\par
+          if (document.execCommand('copy')) \{\par
+            alert('Content copied to clipboard!');\par
+          \} else \{\par
+            alert('Failed to copy content.');\par
+          \}\par
+        \} catch (execError) \{\par
+          console.error('Fallback copy error:', execError);\par
+          alert('Failed to copy content.');\line         \}\par
+        document.body.removeChild(tempTextArea);\par
+      \}\par
+    \}\par
+
+    if (token && index !== null) \{\par
+      loadContent();\par
+    \} else \{\par
+      document.getElementById('contentDisplay').innerText = 'Token or index not provided.';\par
+      document.getElementById('noteTitle').innerText = '';\par
+    \}\par
+  </script>
+</body>
+</html>
+}

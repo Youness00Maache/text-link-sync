@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - TextLinker</title>
+  <meta name="description" content="Learn how TextLinker handles QR sessions, transfer messages, files, Android permissions, and third-party infrastructure.">
+  <meta name="theme-color" content="#070907">
+  <link rel="icon" href="/TextLinkerLogo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="/marketing-pages.css">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="scroll-progress" aria-hidden="true"></div>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="/" aria-label="TextLinker home"><img src="/TextLinkerAppLogo.png" alt="TextLinker"></a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a class="nav-link" href="/how-it-works">How it works</a>
+        <a class="nav-link" href="/features">Features</a>
+        <a class="nav-link active" href="/privacy">Privacy</a>
+        <a class="nav-link" href="https://play.google.com/store/apps/details?id=com.xfire.textlinker" target="_blank" rel="noopener noreferrer">Android app</a>
+      </nav>
+      <a class="nav-cta" href="/receive"><i data-lucide="scan-line"></i><span>Generate QR</span></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container hero-inner">
+        <p class="eyebrow">Privacy policy</p>
+        <h1>Clear about what moves through TextLinker.</h1>
+        <p class="hero-lead">TextLinker does not require an account, but transfers still use network infrastructure. This policy explains what is processed, why it is needed, and the choices available to you.</p>
+        <div class="hero-icon" aria-hidden="true"><i data-lucide="shield-check"></i></div>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <div class="container policy-layout">
+        <aside class="policy-nav" aria-label="Privacy policy sections">
+          <a href="#overview">Overview</a>
+          <a href="#processed">Data processed</a>
+          <a href="#transfers">Transfer content</a>
+          <a href="#retention">Retention</a>
+          <a href="#third-parties">Service providers</a>
+          <a href="#permissions">Android permissions</a>
+          <a href="#security">Security</a>
+          <a href="#choices">Your choices</a>
+          <a href="#contact">Contact</a>
+        </aside>
+
+        <article class="policy-content reveal">
+          <section id="overview">
+            <p class="section-kicker">Last updated June 19, 2026</p>
+            <h2>Overview</h2>
+            <p>TextLinker helps move text and files between an Android device and a web browser. You do not need to create an account or provide a name to use the web receiver.</p>
+            <div class="notice"><strong>Important:</strong> TextLinker uses encrypted HTTPS connections, but it does not currently claim end-to-end encryption. Avoid transferring content you would not be comfortable processing through the service infrastructure described below.</div>
+          </section>
+
+          <section id="processed">
+            <h2>Data processed during a session</h2>
+            <p>To create and operate a transfer session, TextLinker processes technical identifiers including a random session ID, a random pairing token, session direction, status, creation time, and expiration time.</p>
+            <p>Infrastructure providers may also process ordinary network information such as IP address, request time, browser or device information, and diagnostic logs needed to operate and protect their services.</p>
+          </section>
+
+          <section id="transfers">
+            <h2>Text and file transfers</h2>
+            <ul>
+              <li>Text notes may include a title, content, preview, local ID, creation date, and optional group ID.</li>
+              <li>File manifests include metadata such as file name, MIME type, size, local ID, date, and optional group ID.</li>
+              <li>A file is uploaded only when it is sent from the web or specifically requested from the phone.</li>
+              <li>Web-sent files are limited to one file per message and 25 MB per file.</li>
+            </ul>
+            <p>Do not transfer unlawful content, malicious files, or content you do not have permission to share.</p>
+          </section>
+
+          <section id="retention">
+            <h2>Expiration and retention</h2>
+            <p>QR sessions are designed to expire after approximately 10 minutes. Session expiration stops the active website listener and prevents new valid transfer messages for that session.</p>
+            <p>Transfer records and uploaded file objects may remain in Supabase until automated or administrative cleanup removes them. Cleanup can be delayed, so session expiration should not be understood as guaranteed immediate deletion of every backend record or storage object.</p>
+          </section>
+
+          <section id="third-parties">
+            <h2>Service providers</h2>
+            <p>TextLinker uses Supabase for database, Realtime, and file-storage infrastructure. Supabase processes transfer data as a service provider under its own terms and privacy documentation.</p>
+            <p>The Android app is distributed through Google Play. Google may process Play Store activity, installation information, diagnostics, and other data according to Google's policies.</p>
+            <p>The current website does not include advertising trackers or a third-party analytics SDK.</p>
+          </section>
+
+          <section id="permissions">
+            <h2>Android permissions and device access</h2>
+            <ul>
+              <li>Camera access may be used to scan a TextLinker QR code.</li>
+              <li>File access should use Android's system picker or scoped storage for files you choose or request.</li>
+              <li>Network access is required to communicate with the website and Supabase.</li>
+            </ul>
+            <p>TextLinker does not need your location or contacts for its core transfer workflow.</p>
+          </section>
+
+          <section id="security">
+            <h2>Security controls</h2>
+            <p>TextLinker uses random pairing tokens, short-lived sessions, HTTPS transport, payload validation, file-size limits, trusted-host checks, one active file request at a time, cooldowns, and per-session request limits.</p>
+            <p>No system is perfectly secure. Keep the app updated, verify the QR is displayed on the computer you intend to use, and close the session when you are finished.</p>
+          </section>
+
+          <section id="choices">
+            <h2>Your choices</h2>
+            <ul>
+              <li>You can use the site without creating an account.</li>
+              <li>You choose which text or file is sent.</li>
+              <li>You can stop a session by selecting Done, closing the page, or allowing it to expire.</li>
+              <li>You can remove locally saved items from the Android app using its library controls.</li>
+            </ul>
+          </section>
+
+          <section id="children">
+            <h2>Children</h2>
+            <p>TextLinker is a general-purpose utility and is not directed to children under 13. Do not use the service to transfer sensitive information about children.</p>
+          </section>
+
+          <section id="changes">
+            <h2>Policy changes</h2>
+            <p>This policy may be updated when TextLinker changes its transfer flow, infrastructure, security controls, or legal requirements. The updated date at the top will identify the latest version.</p>
+          </section>
+
+          <section id="contact">
+            <h2>Contact</h2>
+            <p>Questions or privacy requests can be sent to <a href="mailto:younesspc7@gmail.com">younesspc7@gmail.com</a>.</p>
+          </section>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div class="container cta-inner">
+        <div><h2>Ready to connect?</h2><p>Create a temporary QR session when both devices are in front of you.</p></div>
+        <a class="button" href="/receive"><i data-lucide="scan-line"></i>Generate QR code</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner"><span>&copy; <span data-year></span> TextLinker</span><div class="footer-links"><a href="/">Home</a><a href="/features">Features</a><a href="/privacy">Privacy</a></div></div>
+  </footer>
+  <script src="/marketing-pages.js"></script>
+</body>
+</html>

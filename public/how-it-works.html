@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How TextLinker Works - Android and Web Transfers</title>
+  <meta name="description" content="See how TextLinker connects Android and a browser with a temporary QR session to move text and files.">
+  <meta name="theme-color" content="#070907">
+  <link rel="icon" href="/TextLinkerLogo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="/marketing-pages.css">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="scroll-progress" aria-hidden="true"></div>
+  <header class="site-header"><div class="container nav">
+    <a class="brand" href="/" aria-label="TextLinker home"><img src="/TextLinkerAppLogo.png" alt="TextLinker"></a>
+    <nav class="nav-links" aria-label="Primary navigation"><a class="nav-link active" href="/how-it-works">How it works</a><a class="nav-link" href="/features">Features</a><a class="nav-link" href="/privacy">Privacy</a><a class="nav-link" href="https://play.google.com/store/apps/details?id=com.xfire.textlinker" target="_blank" rel="noopener noreferrer">Android app</a></nav>
+    <a class="nav-cta" href="/receive"><i data-lucide="scan-line"></i><span>Generate QR</span></a>
+  </div></header>
+
+  <main>
+    <section class="page-hero"><div class="container hero-inner">
+      <p class="eyebrow">How it works</p><h1>A short-lived bridge between Android and your browser.</h1>
+      <p class="hero-lead">TextLinker uses a QR code to pair the device in your hand with the browser in front of you. The connection is temporary, explicit, and focused on the item you choose.</p>
+      <div class="hero-icon" aria-hidden="true"><i data-lucide="workflow"></i></div>
+    </div></section>
+
+    <section class="content-section"><div class="container">
+      <div class="section-heading reveal"><p class="section-kicker">The complete flow</p><h2>Four moments, no account setup.</h2><p>Every transfer starts with a fresh browser session and ends when you close it or the timer runs out.</p></div>
+      <div class="timeline reveal">
+        <div class="timeline-row"><span class="timeline-number">01</span><h3>Generate a session</h3><p>The browser creates a random session ID and pairing token, then displays them inside a QR code. The session expires in about 10 minutes.</p></div>
+        <div class="timeline-row"><span class="timeline-number">02</span><h3>Scan from Android</h3><p>The TextLinker app validates the QR type, direction, pairing token, and expiration time before connecting.</p></div>
+        <div class="timeline-row"><span class="timeline-number">03</span><h3>Browse the phone library</h3><p>The app sends a manifest containing folders, full text notes, and file metadata. Files themselves stay on the phone until requested.</p></div>
+        <div class="timeline-row"><span class="timeline-number">04</span><h3>Move one item</h3><p>Open text immediately, request one phone file, or send text and one file from the browser back to Android.</p></div>
+      </div>
+    </div></section>
+
+    <section class="content-section alt"><div class="container">
+      <div class="section-heading reveal"><p class="section-kicker">What the QR contains</p><h2>Only the session details needed to pair.</h2><p>The QR follows the fixed <code>textlinker.session.v1</code> contract. Android should reject altered, missing, or expired fields.</p></div>
+      <div class="detail-grid reveal">
+        <article class="detail-item"><div class="detail-icon"><i data-lucide="fingerprint"></i></div><h3>Session identity</h3><p>A UUID identifies this browser session without identifying you as a person.</p></article>
+        <article class="detail-item"><div class="detail-icon"><i data-lucide="key-round"></i></div><h3>Pairing token</h3><p>A long random token must match on every accepted transfer message.</p></article>
+        <article class="detail-item"><div class="detail-icon"><i data-lucide="timer-off"></i></div><h3>Expiration</h3><p>The expiry timestamp tells both devices when to stop accepting transfers.</p></article>
+      </div>
+    </div></section>
+
+    <section class="content-section"><div class="container">
+      <div class="section-heading reveal"><p class="section-kicker">Built-in limits</p><h2>Useful enough to transfer, restrained enough to protect.</h2><p>Limits are enforced across the website, Supabase validation, and Android implementation.</p></div>
+      <div class="detail-grid reveal">
+        <article class="detail-item"><div class="detail-icon"><i data-lucide="file-up"></i></div><h3>25 MB per file</h3><p>One web-sent file per message keeps mobile memory, bandwidth, and storage use predictable.</p></article>
+        <article class="detail-item"><div class="detail-icon"><i data-lucide="mouse-pointer-click"></i></div><h3>One active request</h3><p>The site will not queue another phone file while the current request is unresolved.</p></article>
+        <article class="detail-item"><div class="detail-icon"><i data-lucide="shield-alert"></i></div><h3>Spam protection</h3><p>Five-second cooldowns and a 20-request session cap reduce abusive repeated requests.</p></article>
+      </div>
+    </div></section>
+
+    <section class="cta-band"><div class="container cta-inner"><div><h2>Try the complete flow.</h2><p>Generate a QR, scan it in Android, and choose the item you need.</p></div><a class="button" href="/receive"><i data-lucide="scan-line"></i>Generate QR code</a></div></section>
+  </main>
+  <footer class="site-footer"><div class="container footer-inner"><span>&copy; <span data-year></span> TextLinker</span><div class="footer-links"><a href="/">Home</a><a href="/features">Features</a><a href="/privacy">Privacy</a></div></div></footer>
+  <script src="/marketing-pages.js"></script>
+</body>
+</html>
