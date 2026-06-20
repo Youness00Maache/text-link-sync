@@ -28,3 +28,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Local migration notes retained outside the repository
+server.js.rtf
+public/readme.txt
