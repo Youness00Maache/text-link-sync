@@ -107,7 +107,9 @@ begin
     raise exception 'Pairing token mismatch';
   end if;
 
-  if new.expires_at is distinct from session_row.expires_at then
+  if new.expires_at is null then
+    new.expires_at := session_row.expires_at;
+  elsif new.expires_at is distinct from session_row.expires_at then
     raise exception 'Message expiry must match session expiry';
   end if;
 

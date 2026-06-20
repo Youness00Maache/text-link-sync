@@ -9,6 +9,7 @@ Run these files in Supabase Dashboard > SQL Editor in this exact order:
 5. `02c_message_file_limits.sql`
 6. `02d_message_request_rate_limits.sql`
 7. `03_compatibility_rls_policies.sql`
+8. `04_android_message_expiry_compatibility.sql`
 
 Avoid the older long `02_message_validation_trigger*.sql` files if Supabase keeps cutting or corrupting them. The `02a` through `02d` files are intentionally tiny.
 

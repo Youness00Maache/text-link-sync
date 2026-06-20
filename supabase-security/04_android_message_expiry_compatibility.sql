@@ -1,5 +1,8 @@
--- TextLinker chunk 02a: validate message session/token/expiry/basic payload.
--- Run this whole file. If Supabase shows the RLS popup, click "Run without RLS".
+-- TextLinker compatibility repair for installed Android builds.
+-- Run this whole file in Supabase Dashboard > SQL Editor.
+-- It preserves session ID and pairing-token validation. If an older Android
+-- build omits transfer_messages.expires_at, the canonical session expiry is
+-- copied into the row before RLS checks it.
 
 create or replace function public.textlinker_validate_message_session()
 returns trigger
@@ -46,9 +49,6 @@ begin
     raise exception 'Pairing token mismatch';
   end if;
 
-  -- Installed Android builds may omit the duplicated message expiry. The
-  -- session/token lookup above is authoritative, so copy its expiry while
-  -- continuing to reject any explicitly incorrect value.
   if new.expires_at is null then
     new.expires_at := session_expires_at;
   elsif new.expires_at is distinct from session_expires_at then

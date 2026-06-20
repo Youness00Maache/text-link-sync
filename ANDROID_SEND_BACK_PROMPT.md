@@ -28,6 +28,21 @@ Keep the existing Android-to-web contract unchanged:
 - Android still sends the phone library manifest with `payload.kind = "library_manifest"`.
 - Android still responds to website file requests with `payload.kind = "files"`.
 
+Every Android insert into `transfer_messages`, including `library_manifest` and
+`files`, must include these top-level row fields in addition to `payload`:
+
+```json
+{
+  "session_id": "<QR session_id>",
+  "pairing_token": "<QR pairing_token>",
+  "expires_at": "<QR expires_at>",
+  "payload": { "version": 1, "kind": "library_manifest" }
+}
+```
+
+Copy `expires_at` directly from the scanned QR. Do not generate, truncate, or
+recalculate it on Android.
+
 New goal:
 - After Android scans and connects to the website session, keep listening to Supabase Realtime inserts on `transfer_messages` for the same session.
 - The website can now send text notes and files back to the phone.
