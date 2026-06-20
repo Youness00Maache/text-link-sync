@@ -10,6 +10,7 @@ Run these files in Supabase Dashboard > SQL Editor in this exact order:
 6. `02d_message_request_rate_limits.sql`
 7. `03_compatibility_rls_policies.sql`
 8. `04_android_message_expiry_compatibility.sql`
+9. `05_library_manifest_compatibility.sql`
 
 Avoid the older long `02_message_validation_trigger*.sql` files if Supabase keeps cutting or corrupting them. The `02a` through `02d` files are intentionally tiny.
 
@@ -43,3 +44,4 @@ Current shared anti-spam limits:
 - Twenty file requests per QR session.
 - One web-sent file per message.
 - Maximum file size is 25 MB.
+- Library manifests may list larger files because they contain metadata only; the website prevents requesting files above the transfer limit.

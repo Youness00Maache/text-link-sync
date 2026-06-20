@@ -1996,6 +1996,14 @@
     async function requestFile(fileId) {
       const manifestFile = library.files.find(item => item.id === fileId);
       const now = Date.now();
+      if (manifestFile && Number(manifestFile.size_bytes) > MAX_OUTBOUND_FILE_BYTES) {
+        setState(
+          'File is too large',
+          manifestFile.name + ' is ' + formatFileSize(manifestFile.size_bytes) + '. The transfer limit is ' + formatFileSize(MAX_OUTBOUND_FILE_BYTES) + '.',
+          'error'
+        );
+        return;
+      }
       const pendingFileCount = Array.from(pendingRequests.keys()).filter(key => key.startsWith('file:')).length;
       if (pendingFileCount >= MAX_PENDING_FILE_REQUESTS) {
         setState('Request already active', 'Wait for the current file request to finish before requesting another file.', 'error');

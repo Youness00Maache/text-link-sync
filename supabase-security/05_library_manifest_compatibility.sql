@@ -1,5 +1,6 @@
--- TextLinker chunk 02a: validate message session/token/expiry/basic payload.
--- Run this whole file. If Supabase shows the RLS popup, click "Run without RLS".
+-- TextLinker compatibility repair for Android library manifests.
+-- Run this whole file in Supabase Dashboard > SQL Editor after file 04.
+-- Manifests contain metadata and full note content, not uploaded file bytes.
 
 create or replace function public.textlinker_validate_message_session()
 returns trigger
@@ -47,9 +48,6 @@ begin
     raise exception 'Pairing token mismatch';
   end if;
 
-  -- Installed Android builds may omit the duplicated message expiry. The
-  -- session/token lookup above is authoritative, so copy its expiry while
-  -- continuing to reject any explicitly incorrect value.
   if new.expires_at is null then
     new.expires_at := session_expires_at;
   elsif new.expires_at is distinct from session_expires_at then
@@ -60,7 +58,38 @@ begin
 end;
 $f$;
 
-drop trigger if exists textlinker_02a_message_session on public.transfer_messages;
-create trigger textlinker_02a_message_session
-before insert on public.transfer_messages
-for each row execute function public.textlinker_validate_message_session();
+create or replace function public.textlinker_validate_message_file_limits()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $f$
+declare
+  body jsonb;
+  kind text;
+  files_count int := 0;
+begin
+  body := new.payload::jsonb;
+  kind := body->>'kind';
+
+  if jsonb_typeof(body->'files') = 'array' then
+    files_count := jsonb_array_length(body->'files');
+  end if;
+
+  if kind = 'web_files' and files_count > 1 then
+    raise exception 'Only one file can be sent in one web_files message';
+  end if;
+
+  if kind in ('files', 'web_files') and exists (
+    select 1
+      from jsonb_array_elements(coalesce(body->'files', '[]'::jsonb)) as file_item
+     where coalesce(file_item->>'size_bytes', '') !~ '^[0-9]+$'
+        or (file_item->>'size_bytes')::bigint > 26214400
+  ) then
+    raise exception 'File exceeds TextLinker limits';
+  end if;
+
+  return new;
+end;
+$f$;
+

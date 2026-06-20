@@ -40,7 +40,8 @@ Use these same limits in the website, Android app, and Supabase validation. Do n
    - Max pending file requests: `1`
    - File request cooldown: `5000` ms
    - Max file requests per QR session: `20`
-   - Max payload JSON length: `250000`
+   - Max ordinary payload JSON length: `250000`
+   - Max library manifest JSON length: `5000000`
 
 3. Never auto-open received files. Save first, then let the user tap Open.
 
@@ -69,7 +70,7 @@ Use these same limits in the website, Android app, and Supabase validation. Do n
    - allow at most 1 active/pending file upload at once.
    - require at least 5 seconds between accepted file requests.
    - allow at most 20 file requests during one QR session.
-   - each requested file must be <= 25 MB.
+   - each requested file must be <= 25 MB. A manifest may list larger phone files, but the website will not request them.
    - if a request is duplicated, ignore the duplicate.
 
 8. Deduplicate received rows by `transfer_messages.id`.

@@ -82,7 +82,8 @@ begin
     raise exception 'Invalid payload version';
   end if;
 
-  if length(body::text) > 250000 then
+  if (kind = 'library_manifest' and length(body::text) > 5000000)
+     or (kind <> 'library_manifest' and length(body::text) > 250000) then
     raise exception 'Transfer message is too large';
   end if;
 
@@ -140,7 +141,7 @@ begin
     raise exception 'Only one file can be sent in one web_files message';
   end if;
 
-  if kind in ('files', 'web_files', 'library_manifest') and jsonb_typeof(body->'files') = 'array' then
+  if kind in ('files', 'web_files') and jsonb_typeof(body->'files') = 'array' then
     for item in select * from jsonb_array_elements(body->'files')
     loop
       if coalesce(item->>'size_bytes', '') !~ '^[0-9]+$' then

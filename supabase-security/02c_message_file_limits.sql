@@ -23,7 +23,9 @@ begin
     raise exception 'Only one file can be sent in one web_files message';
   end if;
 
-  if exists (
+  -- Manifests contain metadata only. Apply the size limit when bytes are
+  -- transferred, not while listing files that remain on the phone.
+  if kind in ('files', 'web_files') and exists (
     select 1
       from jsonb_array_elements(coalesce(body->'files', '[]'::jsonb)) as file_item
      where coalesce(file_item->>'size_bytes', '') !~ '^[0-9]+$'

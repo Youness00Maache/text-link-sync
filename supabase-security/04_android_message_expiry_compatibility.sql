@@ -24,7 +24,8 @@ begin
     raise exception 'Invalid payload version';
   end if;
 
-  if length(body::text) > 250000 then
+  if (kind = 'library_manifest' and length(body::text) > 5000000)
+     or (kind <> 'library_manifest' and length(body::text) > 250000) then
     raise exception 'Transfer message is too large';
   end if;
 
