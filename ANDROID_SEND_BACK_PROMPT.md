@@ -28,6 +28,19 @@ Keep the existing Android-to-web contract unchanged:
 - Android still sends the phone library manifest with `payload.kind = "library_manifest"`.
 - Android still responds to website file requests with `payload.kind = "files"`.
 
+Phone-library items are on demand:
+- `library_manifest.files[]` contains metadata only. Include every file in the
+  listing even when it is larger than 25 MB. Do not upload file bytes while
+  sending the manifest.
+- `library_manifest.texts[]` contains `id`, `title`, `preview`, `created_at`,
+  and `group_id`. Omit full `content` from new app builds.
+- When the website inserts `payload.kind = "text_request"`, find that local
+  note by `payload.text_id` and respond with `payload.kind = "texts"`, including
+  its full content.
+- When the website inserts `payload.kind = "file_request"`, upload and respond
+  only if the requested file is at most 25 MB. The website also enforces this
+  limit before creating the request.
+
 Every Android insert into `transfer_messages`, including `library_manifest` and
 `files`, must include these top-level row fields in addition to `payload`:
 
@@ -54,11 +67,19 @@ Validation:
   - current time is before `currentSession.expires_at`
 - Ignore rows created by Android itself, including:
   - `library_manifest`
-  - `file_request`
   - Android's own `files` responses
 - Do not require login.
 
 Listen for new payload kinds:
+
+## 0. Website Item Requests
+
+For `text_request`, read `payload.text_id`, load that note from the local
+library, and insert a matching `texts` response containing the full note.
+
+For `file_request`, read `payload.file_id`, load that file from the local
+library, verify it is no larger than 25 MB, upload it, and insert a matching
+`files` response. Never upload every manifest file automatically.
 
 ## 1. Web Texts
 

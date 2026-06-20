@@ -759,6 +759,55 @@
       padding: 18px;
     }
 
+    .error-toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 40;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: min(390px, calc(100vw - 32px));
+      padding: 15px 16px;
+      border: 1px solid rgba(255, 126, 120, 0.5);
+      border-radius: 12px;
+      background: #231313;
+      color: #fff4f3;
+      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.55);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(14px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .error-toast.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .error-toast i {
+      margin-top: 2px;
+      color: var(--red);
+      font-size: 18px;
+    }
+
+    .error-toast strong,
+    .error-toast span {
+      display: block;
+    }
+
+    .error-toast strong {
+      margin-bottom: 3px;
+      font-size: 15px;
+    }
+
+    .error-toast span {
+      color: #e6b9b6;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
     .modal-head {
       display: flex;
       align-items: flex-start;
@@ -882,6 +931,12 @@
         width: 100%;
         justify-content: flex-start;
       }
+
+      .error-toast {
+        right: 12px;
+        bottom: 12px;
+        width: calc(100vw - 24px);
+      }
     }
   </style>
 </head>
@@ -968,6 +1023,11 @@
     </main>
   </div>
 
+  <div id="errorToast" class="error-toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+    <div><strong id="errorToastTitle">File is too large</strong><span id="errorToastMessage"></span></div>
+  </div>
+
   <div id="previewModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-card">
       <div class="modal-head">
@@ -1040,6 +1100,9 @@
     const modalBody = document.getElementById('modalBody');
     const modalActions = document.getElementById('modalActions');
     const modalClose = document.getElementById('modalClose');
+    const errorToast = document.getElementById('errorToast');
+    const errorToastTitle = document.getElementById('errorToastTitle');
+    const errorToastMessage = document.getElementById('errorToastMessage');
 
     const filterDefs = [
       ['all', 'All'],
@@ -1068,6 +1131,7 @@
     let pendingRequests = new Map();
     let lastFileRequestAt = 0;
     let fileRequestsThisSession = 0;
+    let errorToastTimer = null;
 
     function showStartScreen() {
       stopTimers();
@@ -1111,6 +1175,14 @@
       stateMessage.innerHTML = '<strong></strong><span></span>';
       stateMessage.querySelector('strong').textContent = title;
       stateMessage.querySelector('span').textContent = detail;
+    }
+
+    function showErrorToast(title, message) {
+      clearTimeout(errorToastTimer);
+      errorToastTitle.textContent = title;
+      errorToastMessage.textContent = message;
+      errorToast.classList.add('show');
+      errorToastTimer = setTimeout(() => errorToast.classList.remove('show'), 5000);
     }
 
     function createPairingToken() {
@@ -1997,10 +2069,9 @@
       const manifestFile = library.files.find(item => item.id === fileId);
       const now = Date.now();
       if (manifestFile && Number(manifestFile.size_bytes) > MAX_OUTBOUND_FILE_BYTES) {
-        setState(
+        showErrorToast(
           'File is too large',
-          manifestFile.name + ' is ' + formatFileSize(manifestFile.size_bytes) + '. The transfer limit is ' + formatFileSize(MAX_OUTBOUND_FILE_BYTES) + '.',
-          'error'
+          manifestFile.name + ' is ' + formatFileSize(manifestFile.size_bytes) + '. The transfer limit is ' + formatFileSize(MAX_OUTBOUND_FILE_BYTES) + '.'
         );
         return;
       }
