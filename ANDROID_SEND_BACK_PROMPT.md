@@ -79,7 +79,9 @@ library, and insert a matching `texts` response containing the full note.
 
 For `file_request`, read `payload.file_id`, load that file from the local
 library, verify it is no larger than 25 MB, upload it, and insert a matching
-`files` response. Never upload every manifest file automatically.
+`files` response. This is a website request for a phone-library file; ignore
+requests whose `source` is `android`. Never upload every manifest file
+automatically.
 
 ## 1. Web Texts
 
@@ -111,8 +113,8 @@ Android behavior:
 ## 2. Web Files
 
 One `web_files` payload may contain multiple files. The website keeps the
-combined size of the files in that message at or below 25 MB. Download and save
-every valid item in `payload.files[]`; do not assume the array has one item.
+combined size of each offered batch at or below 25 MB. Do not assume the array
+has one item, and do not download a file merely because its metadata arrived.
 
 Payload shape:
 
@@ -121,15 +123,13 @@ Payload shape:
   "version": 1,
   "kind": "web_files",
   "source": "web",
+  "delivery": "offer",
   "files": [
     {
       "id": "uuid",
       "name": "example.pdf",
       "mime_type": "application/pdf",
       "size_bytes": 123456,
-      "bucket": "textlinker-transfers",
-      "path": "session-id/web/random-example.pdf",
-      "public_url": "https://.../storage/v1/object/public/textlinker-transfers/session-id/web/random-example.pdf",
       "created_at": "ISO date",
       "group_id": null
     }
@@ -138,7 +138,26 @@ Payload shape:
 ```
 
 Android behavior:
-- For each file, download using `public_url`.
+- When `delivery == "offer"`, show each file in the received inbox with its
+  name, MIME type, size, and a Request button. There is no `public_url` yet.
+- Do not download or save an offered file automatically.
+- When the user taps Request, insert this row into `transfer_messages` using
+  the active session ID, pairing token, and expiry:
+
+```json
+{
+  "version": 1,
+  "kind": "file_request",
+  "source": "android",
+  "file_id": "<offered web file id>",
+  "request_id": "<new UUID>"
+}
+```
+
+- Keep listening. The website uploads only that requested file and sends a
+  second `web_files` payload with `delivery == "ready"`, the same file `id`,
+  and its `bucket`, `path`, and `public_url`.
+- Download using `public_url` only after receiving that matching ready response.
 - Do not use a service key.
 - Save the file into the app's local file library or downloads area, matching the existing app storage pattern.
 - Preserve `name`, `mime_type`, `size_bytes`, and `created_at`.

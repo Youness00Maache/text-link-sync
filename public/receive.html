@@ -1142,6 +1142,7 @@
     let receivedTexts = [];
     let receivedFiles = [];
     let fileResponses = new Map();
+    let offeredWebFiles = new Map();
     let pendingRequests = new Map();
     let lastFileRequestAt = 0;
     let fileRequestsThisSession = 0;
@@ -1731,7 +1732,7 @@
       });
     }
 
-    async function uploadWebFile(file, index, total, status) {
+    async function uploadWebFile(file, index, total, status, fileId = crypto.randomUUID()) {
       const safeName = cleanFileName(file.name);
       const path = activeSession.id + '/web/' + crypto.randomUUID() + '-' + safeName;
       const isLargeFile = file.size > RESUMABLE_UPLOAD_THRESHOLD;
@@ -1748,7 +1749,7 @@
         .getPublicUrl(path);
 
       return {
-        id: crypto.randomUUID(),
+        id: fileId,
         name: file.name || safeName,
         mime_type: file.type || 'application/octet-stream',
         size_bytes: file.size,
@@ -1773,28 +1774,38 @@
       }
 
       button.disabled = true;
-      status.textContent = 'Preparing files...';
-      setState('Uploading for phone', 'Uploading selected files before sending them to the app.');
+      status.textContent = 'Sharing file list with phone...';
+      setState('Offering files to phone', 'Sending file details. The files stay in this browser until requested.');
 
       try {
-        const uploaded = [];
-        for (let index = 0; index < files.length; index += 1) {
-          uploaded.push(await uploadWebFile(files[index], index + 1, files.length, status));
-        }
+        const offers = files.map(file => {
+          const metadata = {
+            id: crypto.randomUUID(),
+            name: file.name || 'file',
+            mime_type: file.type || 'application/octet-stream',
+            size_bytes: file.size,
+            created_at: new Date().toISOString(),
+            group_id: null
+          };
+          offeredWebFiles.set(metadata.id, { file, metadata, ready: null, uploading: false });
+          return metadata;
+        });
 
-        status.textContent = 'Sending file list to phone...';
         const ok = await insertSessionMessage({
           version: 1,
           kind: 'web_files',
           source: 'web',
-          files: uploaded
+          delivery: 'offer',
+          files: offers
         }, 'Could not send these files to your phone.');
 
         if (ok) {
           input.value = '';
           updateSelectedFilesLabel(input, selectedLabel);
-          status.textContent = uploaded.length + ' file' + (uploaded.length === 1 ? '' : 's') + ' sent to phone.';
-          setState('Sent to phone', 'Your uploaded file' + (uploaded.length === 1 ? ' is' : 's are') + ' ready for the app to download.', 'success');
+          status.textContent = offers.length + ' file' + (offers.length === 1 ? '' : 's') + ' available to request. Keep this page open.';
+          setState('Files available on phone', 'Nothing has uploaded yet. The app can request each file when you choose it.', 'success');
+        } else {
+          offers.forEach(item => offeredWebFiles.delete(item.id));
         }
       } catch (error) {
         const detail = error && error.message ? error.message : 'File upload failed.';
@@ -1802,6 +1813,65 @@
         setState('Error', detail, 'error');
       } finally {
         button.disabled = false;
+      }
+    }
+
+    async function sendOfferedWebFile(fileId, requestId = null) {
+      const offer = offeredWebFiles.get(fileId);
+      if (!offer) {
+        showErrorToast('File unavailable', 'That browser file is no longer available. Select it again and keep this page open.');
+        return;
+      }
+      if (offer.uploading) return;
+
+      if (offer.ready) {
+        await insertSessionMessage({
+          version: 1,
+          kind: 'web_files',
+          source: 'web',
+          delivery: 'ready',
+          request_id: requestId,
+          files: [offer.ready]
+        }, 'Could not return the requested file to your phone.');
+        return;
+      }
+
+      offer.uploading = true;
+      setState('Uploading requested file', 'The phone requested ' + offer.metadata.name + '. Keep this page open until it finishes.');
+
+      try {
+        const backgroundStatus = { textContent: '' };
+        const uploaded = await uploadWebFile(offer.file, 1, 1, backgroundStatus, fileId);
+        offer.ready = uploaded;
+        const ok = await insertSessionMessage({
+          version: 1,
+          kind: 'web_files',
+          source: 'web',
+          delivery: 'ready',
+          request_id: requestId,
+          files: [uploaded]
+        }, 'Could not return the requested file to your phone.');
+
+        if (ok) {
+          setState('Requested file sent', uploaded.name + ' is ready for the app to download.', 'success');
+        }
+      } catch (error) {
+        const detail = error && error.message ? error.message : 'The requested file upload failed.';
+        setState('Error', detail, 'error');
+        showErrorToast('Upload failed', detail);
+      } finally {
+        offer.uploading = false;
+      }
+    }
+
+    async function handleAndroidWebFileRequest(payload) {
+      if (payload.source !== 'android') return;
+      const ids = Array.isArray(payload.file_ids)
+        ? payload.file_ids
+        : (payload.file_id ? [payload.file_id] : []);
+
+      for (const fileId of ids.slice(0, 20)) {
+        await sendOfferedWebFile(safeString(fileId, '', 160), safeString(payload.request_id, '', 160) || null);
       }
     }
 
@@ -1881,7 +1951,7 @@
     }
 
     function showSendFilesModal() {
-      openModal('Send files', 'Choose one or more files with a combined size up to 25 MB.');
+      openModal('Send files', 'Choose files up to 25 MB combined. They stay in this browser until requested from the app.');
 
       const form = document.createElement('form');
       form.className = 'send-form';
@@ -2325,7 +2395,12 @@
         return;
       }
 
-      if (payload.kind === 'text_request' || payload.kind === 'file_request' || payload.kind === 'web_texts' || payload.kind === 'web_files') {
+      if (payload.kind === 'file_request') {
+        await handleAndroidWebFileRequest(payload);
+        return;
+      }
+
+      if (payload.kind === 'text_request' || payload.kind === 'web_texts' || payload.kind === 'web_files') {
         return;
       }
 
@@ -2432,6 +2507,7 @@
       receivedTexts = [];
       receivedFiles = [];
       fileResponses = new Map();
+      offeredWebFiles = new Map();
       processedMessageIds = new Set();
       pendingRequests.clear();
       lastFileRequestAt = 0;
