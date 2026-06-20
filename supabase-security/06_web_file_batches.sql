@@ -1,5 +1,7 @@
--- TextLinker chunk 02c: validate file count and file size.
--- Run this whole file. If Supabase shows the RLS popup, click "Run without RLS".
+-- TextLinker compatibility repair for multi-file web-to-phone batches.
+-- Run this whole file in Supabase Dashboard > SQL Editor after file 05.
+-- A web_files message may contain several files when their combined size is
+-- no more than 25 MB.
 
 create or replace function public.textlinker_validate_message_file_limits()
 returns trigger
@@ -15,8 +17,8 @@ begin
   body := new.payload::jsonb;
   kind := body->>'kind';
 
-  -- Manifests contain metadata only. Apply the size limit when bytes are
-  -- transferred, not while listing files that remain on the phone.
+  -- Manifests contain metadata only. Validate sizes only when file bytes have
+  -- actually been uploaded for transfer.
   if kind in ('files', 'web_files') and exists (
     select 1
       from jsonb_array_elements(coalesce(body->'files', '[]'::jsonb)) as file_item

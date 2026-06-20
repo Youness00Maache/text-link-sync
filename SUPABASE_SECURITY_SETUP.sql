@@ -73,6 +73,7 @@ declare
   files_count int;
   item jsonb;
   size_bytes bigint;
+  total_file_bytes bigint := 0;
   file_request_count int;
 begin
   body := new.payload::jsonb;
@@ -137,10 +138,6 @@ begin
     end loop;
   end if;
 
-  if kind = 'web_files' and files_count > 1 then
-    raise exception 'Only one file can be sent in one web_files message';
-  end if;
-
   if kind in ('files', 'web_files') and jsonb_typeof(body->'files') = 'array' then
     for item in select * from jsonb_array_elements(body->'files')
     loop
@@ -152,7 +149,15 @@ begin
       if size_bytes > 26214400 then
         raise exception 'File exceeds 25 MB TextLinker limit';
       end if;
+
+      if kind = 'web_files' then
+        total_file_bytes := total_file_bytes + size_bytes;
+      end if;
     end loop;
+
+    if kind = 'web_files' and total_file_bytes > 26214400 then
+      raise exception 'Combined web file upload exceeds 25 MB TextLinker limit';
+    end if;
   end if;
 
   if kind = 'file_request' and coalesce(body->>'file_id', '') = '' then

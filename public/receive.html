@@ -528,6 +528,8 @@
     .received-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      grid-auto-rows: 1fr;
+      align-items: stretch;
       gap: 10px;
     }
 
@@ -548,6 +550,7 @@
       grid-template-columns: auto 1fr;
       gap: 12px;
       min-width: 0;
+      height: 100%;
     }
 
     .item-card.requesting {
@@ -603,6 +606,12 @@
       min-width: 0;
     }
 
+    .item-main {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
     .item-title {
       margin: 0 0 4px;
       font-size: 16px;
@@ -632,6 +641,11 @@
       gap: 8px;
       flex-wrap: wrap;
       margin-top: 12px;
+    }
+
+    .item-main > .card-actions {
+      margin-top: auto;
+      padding-top: 12px;
     }
 
     .mini-btn {
@@ -1057,8 +1071,8 @@
     const MAX_MANIFEST_FILES = 500;
     const MAX_TEXT_CHARS = 100000;
     const MAX_TEXT_PREVIEW_CHARS = 500;
-    const MAX_OUTBOUND_FILES = 1;
     const MAX_OUTBOUND_FILE_BYTES = 25 * 1024 * 1024;
+    const MAX_OUTBOUND_BATCH_BYTES = 25 * 1024 * 1024;
     const MAX_PENDING_FILE_REQUESTS = 1;
     const MAX_FILE_REQUESTS_PER_SESSION = 20;
     const FILE_REQUEST_COOLDOWN_MS = 5000;
@@ -1752,14 +1766,9 @@
         status.textContent = 'Choose one or more files first.';
         return;
       }
-      if (files.length > MAX_OUTBOUND_FILES) {
-        status.textContent = 'Send one file at a time.';
-        return;
-      }
-
-      const oversized = files.find(file => file.size > MAX_OUTBOUND_FILE_BYTES);
-      if (oversized) {
-        status.textContent = oversized.name + ' is too large. Max file size is ' + formatFileSize(MAX_OUTBOUND_FILE_BYTES) + '.';
+      const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+      if (totalSize > MAX_OUTBOUND_BATCH_BYTES) {
+        status.textContent = 'Selected files total ' + formatFileSize(totalSize) + '. Keep the combined upload at or below ' + formatFileSize(MAX_OUTBOUND_BATCH_BYTES) + '.';
         return;
       }
 
@@ -1872,7 +1881,7 @@
     }
 
     function showSendFilesModal() {
-      openModal('Send file', 'Choose one file up to 25 MB to send to the connected phone.');
+      openModal('Send files', 'Choose one or more files with a combined size up to 25 MB.');
 
       const form = document.createElement('form');
       form.className = 'send-form';
@@ -1882,11 +1891,12 @@
       input.id = inputId;
       input.className = 'file-picker';
       input.type = 'file';
+      input.multiple = true;
 
       const drop = document.createElement('label');
       drop.className = 'file-drop';
       drop.htmlFor = inputId;
-      drop.innerHTML = '<span><strong>Choose one file</strong><span>Up to 25 MB</span></span>';
+      drop.innerHTML = '<span><strong>Choose files</strong><span>Combined total up to 25 MB</span></span>';
 
       const selected = document.createElement('p');
       selected.className = 'selected-files';
@@ -1908,7 +1918,7 @@
       const send = document.createElement('button');
       send.type = 'submit';
       send.className = 'mini-btn primary';
-      send.textContent = 'Send file';
+      send.textContent = 'Send files';
 
       input.addEventListener('change', () => updateSelectedFilesLabel(input, selected));
       form.addEventListener('submit', event => {

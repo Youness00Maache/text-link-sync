@@ -13,7 +13,8 @@ Use these same limits in the website, Android app, and Supabase validation. Do n
 | Text content | 100,000 characters max |
 | Text preview | 500 characters max |
 | Files sent from web in one send | 1 max |
-| Single transferred file size | 25 MB max |
+| Single requested phone file size | 25 MB max |
+| Web-to-phone file batch | 25 MB combined max |
 | Pending phone file requests from web | 1 max |
 | File request cooldown | 5 seconds |
 | File requests per QR session | 20 max |
@@ -35,7 +36,7 @@ Use these same limits in the website, Android app, and Supabase validation. Do n
    - Max manifest files: `500`
    - Max text content: `100000` chars
    - Max text preview: `500` chars
-   - Max web files per message: `1`
+   - Web files per message: multiple, with a combined maximum of `26214400` bytes
    - Max file size: `25 * 1024 * 1024` bytes
    - Max pending file requests: `1`
    - File request cooldown: `5000` ms

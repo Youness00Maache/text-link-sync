@@ -110,6 +110,10 @@ Android behavior:
 
 ## 2. Web Files
 
+One `web_files` payload may contain multiple files. The website keeps the
+combined size of the files in that message at or below 25 MB. Download and save
+every valid item in `payload.files[]`; do not assume the array has one item.
+
 Payload shape:
 
 ```json

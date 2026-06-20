@@ -67,18 +67,10 @@ as $f$
 declare
   body jsonb;
   kind text;
-  files_count int := 0;
+  total_file_bytes bigint := 0;
 begin
   body := new.payload::jsonb;
   kind := body->>'kind';
-
-  if jsonb_typeof(body->'files') = 'array' then
-    files_count := jsonb_array_length(body->'files');
-  end if;
-
-  if kind = 'web_files' and files_count > 1 then
-    raise exception 'Only one file can be sent in one web_files message';
-  end if;
 
   if kind in ('files', 'web_files') and exists (
     select 1
@@ -89,7 +81,16 @@ begin
     raise exception 'File exceeds TextLinker limits';
   end if;
 
+  if kind = 'web_files' then
+    select coalesce(sum((file_item->>'size_bytes')::bigint), 0)
+      into total_file_bytes
+      from jsonb_array_elements(coalesce(body->'files', '[]'::jsonb)) as file_item;
+
+    if total_file_bytes > 26214400 then
+      raise exception 'Combined web file upload exceeds 25 MB TextLinker limit';
+    end if;
+  end if;
+
   return new;
 end;
 $f$;
-
