@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.2.3/dist/tus.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1094,7 +1093,6 @@
     const SUPABASE_PROJECT_REF = 'pfqzsabuvnyqbbcyqkdq';
     const SUPABASE_DIRECT_STORAGE_URL = 'https://' + SUPABASE_PROJECT_REF + '.storage.supabase.co';
     const TRANSFER_BUCKET = 'textlinker-transfers';
-    const RESUMABLE_UPLOAD_THRESHOLD = 6 * 1024 * 1024;
     const SESSION_MINUTES = 10;
     const MAX_MANIFEST_GROUPS = 200;
     const MAX_MANIFEST_TEXTS = 500;
@@ -1754,61 +1752,11 @@
       if (error) throw error;
     }
 
-    async function resumableUploadWebFile(file, path, status, index, total) {
-      if (!window.tus || typeof window.tus.Upload !== 'function') {
-        await standardUploadWebFile(file, path);
-        return;
-      }
-
-      await new Promise((resolve, reject) => {
-        const upload = new window.tus.Upload(file, {
-          endpoint: SUPABASE_DIRECT_STORAGE_URL + '/storage/v1/upload/resumable',
-          retryDelays: [0, 3000, 5000, 10000, 20000],
-          headers: {
-            authorization: 'Bearer ' + SUPABASE_ANON_KEY,
-            'x-upsert': 'false'
-          },
-          uploadDataDuringCreation: true,
-          removeFingerprintOnSuccess: true,
-          metadata: {
-            bucketName: TRANSFER_BUCKET,
-            objectName: path,
-            contentType: file.type || 'application/octet-stream',
-            cacheControl: '3600'
-          },
-          chunkSize: 6 * 1024 * 1024,
-          onError(error) {
-            reject(error);
-          },
-          onProgress(bytesUploaded, bytesTotal) {
-            const percentage = bytesTotal ? Math.round((bytesUploaded / bytesTotal) * 100) : 0;
-            status.textContent = 'Uploading ' + index + ' of ' + total + ' - ' + percentage + '%';
-          },
-          onSuccess() {
-            resolve();
-          }
-        });
-
-        upload.findPreviousUploads().then(previousUploads => {
-          if (previousUploads.length) {
-            upload.resumeFromPreviousUpload(previousUploads[0]);
-          }
-          upload.start();
-        }).catch(reject);
-      });
-    }
-
     async function uploadWebFile(file, index, total, status, fileId = crypto.randomUUID()) {
       const safeName = cleanFileName(file.name);
       const path = activeSession.id + '/web/' + crypto.randomUUID() + '-' + safeName;
-      const isLargeFile = file.size > RESUMABLE_UPLOAD_THRESHOLD;
-      status.textContent = (isLargeFile ? 'Preparing large upload ' : 'Uploading ') + index + ' of ' + total + '...';
-
-      if (isLargeFile) {
-        await resumableUploadWebFile(file, path, status, index, total);
-      } else {
-        await standardUploadWebFile(file, path);
-      }
+      status.textContent = 'Uploading ' + index + ' of ' + total + '...';
+      await standardUploadWebFile(file, path);
 
       const { data } = supabaseClient.storage
         .from(TRANSFER_BUCKET)
