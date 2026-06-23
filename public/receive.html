@@ -665,10 +665,6 @@
       overflow: hidden;
     }
 
-    .item-card[data-kind="group"] .item-preview {
-      display: none;
-    }
-
     .card-actions {
       display: flex;
       gap: 8px;
@@ -1486,6 +1482,38 @@
       });
     }
 
+    function plural(count, label) {
+      return count + ' ' + label + (count === 1 ? '' : 's');
+    }
+
+    function getFolderStats(folderId) {
+      const groupIds = new Set([folderId]);
+      const pending = [folderId];
+
+      while (pending.length) {
+        const parentId = pending.pop();
+        library.groups.forEach(group => {
+          if ((group.parent_group_id || null) === parentId && !groupIds.has(group.id)) {
+            groupIds.add(group.id);
+            pending.push(group.id);
+          }
+        });
+      }
+
+      const folderCount = Math.max(0, groupIds.size - 1);
+      const texts = library.texts.filter(text => groupIds.has(text.group_id || null));
+      const files = library.files.filter(file => groupIds.has(file.group_id || null));
+      const totalBytes = files.reduce((sum, file) => sum + (Number(file.size_bytes) || 0), 0);
+      const countParts = [
+        folderCount ? plural(folderCount, 'folder') : '',
+        texts.length ? plural(texts.length, 'text') : '',
+        files.length ? plural(files.length, 'file') : ''
+      ].filter(Boolean);
+
+      if (!countParts.length) return 'Empty folder';
+      return countParts.join(' - ') + (files.length ? '. ' + formatFileSize(totalBytes) + ' total' : '');
+    }
+
     function renderLibrary() {
       renderTabs();
       libraryGrid.innerHTML = '';
@@ -1536,7 +1564,7 @@
         const preview = document.createElement('p');
         preview.className = 'item-preview';
         preview.textContent = entry.kind === 'group'
-          ? ''
+          ? getFolderStats(id)
           : (entry.kind === 'text'
             ? (entry.item.preview || entry.item.content || 'Saved text note')
             : (fileResponse ? 'File is ready.' : 'On phone until requested.'));
