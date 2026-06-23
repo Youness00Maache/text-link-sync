@@ -141,6 +141,13 @@ Android behavior:
 - When `delivery == "offer"`, show each file in the received inbox with its
   name, MIME type, size, and a Request button. There is no `public_url` yet.
 - Do not download or save an offered file automatically.
+- Do not show Retry for an offered file. Retry is only valid after a real
+  download attempt fails for a later `delivery == "ready"` payload.
+- Treat an offered file as a remote placeholder:
+  - State: `available_to_request`
+  - Primary action: `Request`
+  - No download progress yet
+  - No local received-file record with a failed download status yet
 - When the user taps Request, insert this row into `transfer_messages` using
   the active session ID, pairing token, and expiry:
 
@@ -154,10 +161,17 @@ Android behavior:
 }
 ```
 
+- Include `source: "android"` in the request. The website is now tolerant of
+  older app builds that omit it, but new app builds should send it exactly.
 - Keep listening. The website uploads only that requested file and sends a
   second `web_files` payload with `delivery == "ready"`, the same file `id`,
   and its `bucket`, `path`, and `public_url`.
 - Download using `public_url` only after receiving that matching ready response.
+- If a `web_files` item has no `public_url`, it is not downloadable yet. Show
+  Request, not Retry.
+- Match the ready response by `files[].id`. When a matching ready file arrives,
+  replace the Request/Waiting state with Downloading/Downloaded using the
+  ready file's `public_url`.
 - Do not use a service key.
 - Save the file into the app's local file library or downloads area, matching the existing app storage pattern.
 - Preserve `name`, `mime_type`, `size_bytes`, and `created_at`.
